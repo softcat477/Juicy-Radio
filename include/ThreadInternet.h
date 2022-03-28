@@ -21,20 +21,16 @@ public:
     void setStop();
     void setStart();
 
-    RingBuffer<char>* _ring_buffer;
+    RingBuffer<char>* ring_buffer;
 private:
     // A variable trigerred by main thread to infomr this thread to stop.
     std::atomic<bool> _isStopped;
     // The number of samples in the ring buffer. This is also the buffer size in CURL.
     size_t _write_buf_size;
 
-    // TODO: ???
+    // Two-stage writing in write_function()
     char* _write_buf;
-    // TODO: ???
     size_t _write_buf_available_data_count;
-
-    // _ring_buffer is in charge of using this variable. DO NOT use this variable!
-    CondVar* _cond_mp3;
 };
 
 #endif

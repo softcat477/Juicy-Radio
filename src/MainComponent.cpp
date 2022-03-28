@@ -14,11 +14,11 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count):
                         _sample_per_frame(sample_per_frame),
                         _max_frame_count(max_frame_count),
                         _internet_manager(sample_per_frame, max_frame_count, &_cond_mp3),
-                        _decoder_manager(_internet_manager._ring_buffer, 1152, max_frame_count, &_cond_mp3, &_cond_pcm)
+                        _decoder_manager(_internet_manager.ring_buffer, 1152, max_frame_count, &_cond_mp3, &_cond_pcm)
 {
     // Points to ring buffers that store the decoded floating points.
-    _buffer_pcm_L = _decoder_manager._pcm_buffer_L;
-    _buffer_pcm_R = _decoder_manager._pcm_buffer_R;
+    _buffer_pcm_L = _decoder_manager.pcm_buffer_L;
+    _buffer_pcm_R = _decoder_manager.pcm_buffer_R;
 
     // Open Button
     addAndMakeVisible(_open_button);

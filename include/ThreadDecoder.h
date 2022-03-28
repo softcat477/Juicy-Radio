@@ -31,10 +31,10 @@ public:
     static std::pair<signed int, float> scale(mad_fixed_t sample);
 
     // Read mp3 frames from here
-    RingBuffer<char>*   _mp3_buffer;
+    RingBuffer<char>*   mp3_buffer;
     // Store decoded floating points to here.
-    RingBuffer<float>* _pcm_buffer_L;
-    RingBuffer<float>* _pcm_buffer_R;
+    RingBuffer<float>* pcm_buffer_L;
+    RingBuffer<float>* pcm_buffer_R;
 private:
     // A variable trigerred by main thread to infomr this thread to stop.
     std::atomic<bool> _isStopped;

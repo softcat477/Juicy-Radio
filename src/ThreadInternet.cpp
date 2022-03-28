@@ -13,8 +13,7 @@ struct memory{
 ThreadInternet::ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count, CondVar* cond_mp3):
                                         _isStopped(false),
                                         _write_buf_size(write_buf_size),
-                                        _write_buf_available_data_count(0),
-                                        _cond_mp3(cond_mp3){
+                                        _write_buf_available_data_count(0){
     /*
      * Input:
      *  <write_buf_size>: The number of samples in the ring buffer. This is also the buffer size in CURL.
@@ -22,11 +21,11 @@ ThreadInternet::ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count
      *  <cond_mp3>: The condition variable in the ring buffer.
     */
     _write_buf = (char*)malloc(sizeof(char)*static_cast<unsigned long long>(write_buf_size));
-    _ring_buffer = new RingBuffer<char>(write_buf_size, buf_max_frame_count, _cond_mp3);
+    ring_buffer = new RingBuffer<char>(write_buf_size, buf_max_frame_count, cond_mp3);
 }
 ThreadInternet::~ThreadInternet(){
     free(_write_buf);
-    delete _ring_buffer;
+    delete ring_buffer;
 }
 void ThreadInternet::start(){
     // Start this thread
@@ -71,29 +70,30 @@ size_t ThreadInternet::write_function(char *data, size_t size, size_t nmemb){
 
     size_t realsize = size * nmemb;
 
+    // 1. Copy part of the data to fill the write_buf
     size_t available_space = _write_buf_size - _write_buf_available_data_count;
     size_t pre_write_num = std::min(available_space, realsize);
     size_t post_write_num = realsize - pre_write_num;
-    // copy data to _write_buf
     memcpy(_write_buf+_write_buf_available_data_count, data, pre_write_num);
     _write_buf_available_data_count += pre_write_num;
 
-    // Copy data(mp3 frame) from data to our ring buffer.
+    // Dump fulled write_buf to the ring buffer.
+    // Here we're not using smartWrite(), so make sure that the ring buffer and the _write_buf have the same size.
     if (_write_buf_available_data_count == _write_buf_size){
-        if (this->_ring_buffer->canWrite()){
-            char* write_ptr = this->_ring_buffer->getWritePtr();
+        if (this->ring_buffer->canWrite()){
+            char* write_ptr = this->ring_buffer->getWritePtr();
             memcpy(write_ptr, _write_buf, _write_buf_size);
-            this->_ring_buffer->finishWrite(_write_buf_size);
+            this->ring_buffer->finishWrite(_write_buf_size);
         }
         else{
-            printf ("Can't write to _ring_buffer.\n");
+            printf ("Can't write to ring_buffer.\n");
             return (size_t)-1;
         }
         memset(_write_buf, 0, _write_buf_size);
         _write_buf_available_data_count = 0;
     }
 
-    // Post WRite
+    // 2. Copy the rest of the data.
     if (post_write_num > 0){
         memcpy(_write_buf, data+pre_write_num, post_write_num);
         _write_buf_available_data_count = post_write_num;
