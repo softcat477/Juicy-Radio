@@ -10,7 +10,7 @@ struct memory{
     size_t size;
 };
 
-ThreadInternet::ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count, CondVar* cond_mp3):
+ThreadInternet::ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count): // 8192, 128
                                         _isStopped(false),
                                         _write_buf_size(write_buf_size),
                                         _write_buf_available_data_count(0){
@@ -18,10 +18,9 @@ ThreadInternet::ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count
      * Input:
      *  <write_buf_size>: The number of samples in the ring buffer. This is also the buffer size in CURL.
      *  <buf_max_frame_count>: The number of frames in the ring buffer.
-     *  <cond_mp3>: The condition variable in the ring buffer.
     */
     _write_buf = (char*)malloc(sizeof(char)*static_cast<unsigned long long>(write_buf_size));
-    ring_buffer = new RingBuffer<char>(write_buf_size, buf_max_frame_count, cond_mp3);
+    ring_buffer = new RingBuffer<char>(write_buf_size, buf_max_frame_count);
 }
 ThreadInternet::~ThreadInternet(){
     free(_write_buf);
@@ -42,11 +41,11 @@ void ThreadInternet::start(){
     if(curl) {
       CURLcode res;
       res = curl_easy_perform(curl);
-      std::cout << "curl_easy_perform get code " << res << std::endl;
     }
 
     curl_easy_cleanup(curl);
-    printf ("Leaving ThreadInternet::start()...\n");
+    ring_buffer->signal();
+    printf ("Quit ThreadInternet::start().\n");
 }
 size_t ThreadInternet::write_callback(char *data, size_t size, size_t nmemb, void *userdata){
     return ((ThreadInternet*)userdata)->write_function(data, size, nmemb);
@@ -64,7 +63,6 @@ size_t ThreadInternet::write_function(char *data, size_t size, size_t nmemb){
      *  and return CURLE_WRITE_ERROR.
      */
     if (this->_isStopped.load() == true){
-        printf ("Quitting ThreadInternst.\n");
         return (size_t)-1;
     }
 

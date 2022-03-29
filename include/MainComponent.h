@@ -52,12 +52,6 @@ private:
     // and store them into TWO ring buffers (left channel and right channel)
     ThreadDecoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
 
-    // Send message between ThreadInternet and ThreadDecoder to inform ThreadDecoder::input to start
-    // decoding a new frame received by the ThreadInternet.
-    CondVar _cond_mp3;
-    // Has no usage
-    CondVar _cond_pcm;
-
     // Read from these two RingBuffer pointer and send to the audio device.
     // Point to the ring buffer holded by ThreadDecoder
     RingBuffer<float>* _buffer_pcm_L;

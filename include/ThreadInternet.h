@@ -11,7 +11,7 @@
 class ThreadInternet{
 public:
     ThreadInternet() = delete;
-    ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count, CondVar* cond_mp3);
+    ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count);
     ~ThreadInternet();
 
     void start();

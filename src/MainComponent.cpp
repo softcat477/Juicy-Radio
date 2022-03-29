@@ -9,12 +9,12 @@
 
 namespace AudioApp
 {
-MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count):
+MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): // 8192, 128
                         _output_gain(0.0),
                         _sample_per_frame(sample_per_frame),
                         _max_frame_count(max_frame_count),
-                        _internet_manager(sample_per_frame, max_frame_count, &_cond_mp3),
-                        _decoder_manager(_internet_manager.ring_buffer, 1152, max_frame_count, &_cond_mp3, &_cond_pcm)
+                        _internet_manager(sample_per_frame, max_frame_count), // 8192, 128
+                        _decoder_manager(_internet_manager.ring_buffer, 1152, 512) // pass, 1152, 128
 {
     // Points to ring buffers that store the decoded floating points.
     _buffer_pcm_L = _decoder_manager.pcm_buffer_L;
@@ -49,15 +49,12 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count):
 MainComponent::~MainComponent()
 {
     shutdownAudio();
-    shutdown();
-    this->_thread_internet.join();
-    this->_thread_decoder.join();
 }
 void MainComponent::shutdown(){
     _internet_manager.setStop();
     _decoder_manager.setStop();
-    _cond_mp3.signal();
-    _cond_pcm.signal();
+    this->_thread_internet.join();
+    this->_thread_decoder.join();
 }
 void MainComponent::paint(juce::Graphics& g)
 {
@@ -86,7 +83,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     if (this->_buffer_pcm_L->canSmartRead()){
         size_t count = _buffer_pcm_L->getSmartRead(tmp_ptr, static_cast<size_t>(numSamples));
         if (count != static_cast<size_t>(numSamples)){
-            printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %zu\n", numSamples, count);
+            printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %zu, %zu/%zu\n", numSamples, count, _buffer_pcm_L->getFrameCount(), _buffer_pcm_L->getMaxFrameCount());
         }
         memcpy(bufferToFill.buffer->getWritePointer(0, startSample), tmp_ptr, sizeof(float) * count);
         bufferToFill.buffer->applyGain(0, 0, static_cast<int>(count), static_cast<float>(_output_gain));
@@ -94,7 +91,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     if (this->_buffer_pcm_R->canSmartRead()){
         size_t count = _buffer_pcm_R->getSmartRead(tmp_ptr, static_cast<size_t>(numSamples));
         if (count != static_cast<size_t>(numSamples)){
-            printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %zu\n", numSamples, count);
+            printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %zu, %zu/%zu\n", numSamples, count, _buffer_pcm_R->getFrameCount(), _buffer_pcm_R->getMaxFrameCount());
         }
         // DEBUG, write decoded floating points to a file and synthesis .wav with python.
         memcpy(bufferToFill.buffer->getWritePointer(1, startSample), tmp_ptr, sizeof(float) * count);

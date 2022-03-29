@@ -14,7 +14,7 @@
 class ThreadDecoder{
 public:
     ThreadDecoder() = delete;
-    ThreadDecoder(RingBuffer<char>* mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size, CondVar* cond_mp3, CondVar* cond_pcm);
+    ThreadDecoder(RingBuffer<char>* mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size);
     ~ThreadDecoder();
     //~ThreadDecoder() override;
 
@@ -38,8 +38,6 @@ public:
 private:
     // A variable trigerred by main thread to infomr this thread to stop.
     std::atomic<bool> _isStopped;
-    // Subscribe to this condition variable, and we are notified whenever ther's new frame in this cond_var.
-    CondVar* _cond_mp3;
 };
 
 #endif

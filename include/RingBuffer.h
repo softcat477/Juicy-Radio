@@ -15,17 +15,17 @@
 #include <fstream>
 
 
+// RingBuffer(size_t sample_per_frame, size_t max_frame_count, CondVar* cond_var):
 template <typename DataType>
 class RingBuffer{
 public:
-    RingBuffer(size_t sample_per_frame, size_t max_frame_count, CondVar* cond_var):
+    RingBuffer(size_t sample_per_frame, size_t max_frame_count):
                                                             _juce_buffer(1, static_cast<int>(sample_per_frame*max_frame_count)),
                                                             _samples_per_frame(sample_per_frame),
                                                             _max_frame_count(max_frame_count),
                                                             _read_idx(0),
                                                             _write_idx(0),
-                                                            _frame_count(0),
-                                                            _cond_var(cond_var){
+                                                            _frame_count(0){
         /*
          *Input:
          *    <sample_per_frame>: The number of samples in each frame.
@@ -38,6 +38,7 @@ public:
         memset(_buffer_length, 0, sizeof(size_t)*_max_frame_count);
     }
     ~RingBuffer(){
+        _cond_var.signal();
         free(_buffer_length);
     }
 
@@ -54,7 +55,7 @@ public:
         //std::scoped_lock lp{this->m};
         _frame_count.fetch_add(1);
         //this->condvar.notify_all();
-        _cond_var->signal();
+        _cond_var.signal();
     }
     bool canSmartWrite(){
         return canWrite();
@@ -107,7 +108,7 @@ public:
     }
     void finishSmartWrite(){
         // A dummy function that does nothing.
-        _cond_var->signal();
+        _cond_var.signal();
         return;
     }
 
@@ -175,18 +176,25 @@ public:
         return;
     }
 
-    int getSamplesPerFrame(){
+    size_t getSamplesPerFrame(){
         return _samples_per_frame;
     }
-    int getFrameCount(){
+    size_t getFrameCount(){
         return _frame_count.load();
     }
-    int getMaxFrameCount(){
+    size_t getMaxFrameCount(){
         return _max_frame_count;
     }
 
     std::condition_variable condvar;
     std::mutex m;
+
+    void signal(){
+        _cond_var.signal();
+    }
+    void wait(){
+        _cond_var.wait();
+    }
 private:
     // Stores the data
     juce::AudioBuffer<DataType> _juce_buffer;
@@ -201,7 +209,7 @@ private:
     std::atomic<size_t> _frame_count;
 
     // A condition variable pointer to inform its holder that new data is available.
-    CondVar* _cond_var;
+    CondVar _cond_var;
 };
 
 #endif

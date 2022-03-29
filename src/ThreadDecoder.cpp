@@ -11,19 +11,16 @@
 
 #include <fstream>
 
-ThreadDecoder::ThreadDecoder(RingBuffer<char>* mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size, 
-                             CondVar* cond_mp3, CondVar* cond_pcm):
-                mp3_buffer(mp3_buffer), _cond_mp3(cond_mp3){
+ThreadDecoder::ThreadDecoder(RingBuffer<char>* mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size): // 1152, 128
+                mp3_buffer(mp3_buffer){
     /*
      * Input:
      *  <mp3_buffer>: Read mp3 frames from this buffer and decode frames into floating points.
      *  <sample_per_frame>: The number of samples in ring buffers for LR channels.
      *  <pcm_buf_size>: The number of frames in the ring buffer for LR channels.
-     *  <cond_mp3>: Subscribe to this condition variable, and we are notified whenever ther's new frame in this cond_var.
-     *  <cond_pcm>: No usage.
     */
-    pcm_buffer_L = new RingBuffer<float>(sample_per_frame, pcm_buf_size, cond_pcm); // sample_per_Frame=1152 for mp3
-    pcm_buffer_R = new RingBuffer<float>(sample_per_frame, pcm_buf_size, cond_pcm); // sample_per_Frame=1152 for mp3
+    pcm_buffer_L = new RingBuffer<float>(sample_per_frame, pcm_buf_size); // sample_per_Frame=1152 for mp3
+    pcm_buffer_R = new RingBuffer<float>(sample_per_frame, pcm_buf_size); // sample_per_Frame=1152 for mp3
 }
 ThreadDecoder::~ThreadDecoder(){
     delete pcm_buffer_L;
@@ -72,7 +69,8 @@ enum mad_flow ThreadDecoder::input(void *data, struct mad_stream *stream){
 
     // Wait until there's mp3 frames.
     if (thread_decoder->mp3_buffer->canRead() == false){
-        thread_decoder->_cond_mp3->wait();
+        //thread_decoder->_cond_mp3->wait();
+        thread_decoder->mp3_buffer->wait();
     }
 
     // Terminate by user
@@ -171,7 +169,7 @@ enum mad_flow ThreadDecoder::output(void *data, struct mad_header const *header,
         thread_decoder->pcm_buffer_L->finishSmartWrite();
     }
     else{
-        printf ("ThreadDecoder.cpp:output: Can't write to pcm_buffer_L\n");
+        printf ("ThreadDecoder.cpp:output: Can't write to pcm_buffer_L %zu/%zu\n", thread_decoder->pcm_buffer_L->getFrameCount(), thread_decoder->pcm_buffer_L->getMaxFrameCount());
     }
 
     if (thread_decoder->pcm_buffer_R->canSmartWrite()){
@@ -182,7 +180,7 @@ enum mad_flow ThreadDecoder::output(void *data, struct mad_header const *header,
         thread_decoder->pcm_buffer_R->finishSmartWrite();
     }
     else{
-        printf ("ThreadDecoder.cpp:output: Can't write to pcm_buffer_R\n");
+        //printf ("ThreadDecoder.cpp:output: Can't write to pcm_buffer_R %zu/%zu\n", thread_decoder->pcm_buffer_R->getFrameCount(), thread_decoder->pcm_buffer_R->getMaxFrameCount());
     }
 
     free(buf);
@@ -223,7 +221,7 @@ void ThreadDecoder::start(){
     /* release the decoder */
     mad_decoder_finish(&decoder);
 
-    printf ("ThreadDecoder::start stopped with code %d\n", result);
+    printf ("Quit ThreadDecoder::start() with code %d\n", result);
 }
 void ThreadDecoder::setStop(){
     _isStopped.store(true);

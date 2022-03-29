@@ -35,6 +35,7 @@ AudioApp::MainWindow::MainWindow(const juce::String& name)
 
 void AudioApp::MainWindow::closeButtonPressed()
 {
+    _main_component->shutdown();
     delete _main_component;
     juce::JUCEApplication::getInstance()->systemRequestedQuit();
 }
