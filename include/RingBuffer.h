@@ -57,6 +57,7 @@ public:
         //this->condvar.notify_all();
         _cond_var.signal();
     }
+
     bool canSmartWrite(){
         return canWrite();
     }
@@ -108,7 +109,8 @@ public:
     }
     void finishSmartWrite(){
         // A dummy function that does nothing.
-        _cond_var.signal();
+        if (canRead(false))
+            _cond_var.signal();
         return;
     }
 
@@ -139,6 +141,7 @@ public:
             *(_buffer_length+old_read_idx) = 0;
         }
     }
+
     bool canSmartRead(bool debug=false){
         return canRead(debug);
     }
@@ -174,6 +177,51 @@ public:
     }
     void finishSmartRead(){
         return;
+    }
+
+    // The lazy function handles the can-get-finish standard for you.
+    // If you're not using these lazy functions, make sure you follow the standard.
+    // --- Use lazy function when two threads share the same data.!
+    size_t lazySmartWrite(DataType* input, size_t write_samples_length){
+        /*
+        Write <write_samples_length> data from <input> to the buffer.
+        Use smartWrite internally and handle the can-get-finish standard for you.
+        Input:
+            input: A pointer to the data that should be written to the buffer.
+            write_samples_length: The number of data you want to write.
+        Output:
+            The number of written samples.
+        */
+        size_t success_written_length = 0;
+        if (this->canSmartWrite()){
+            //size_t ret = this->smartWrite(input, write_samples_length);
+            success_written_length = this->smartWrite(input, write_samples_length);
+            this->finishSmartWrite();
+        }
+        return success_written_length;
+    }
+    size_t lazySmartRead(juce::AudioBuffer<DataType>* output_buffer, int start_sample, int num_samples, int channel){
+        /*
+        Read <num_samples> samples and write them to the <output_buffer> at offset <start_sample>, channel <channel>
+        Input:
+            output_buffer: The object that stores the read samples.
+            start_sample: The output offset of the <output_buffer>.
+            num_samples: Try to read this amount of samples.
+            channel: The output channel of the <output_buffer>
+        Output:
+            The number of read samples.
+        */
+        size_t success_read_length = 0;
+        DataType* tmp_ptr = (DataType*)malloc(sizeof(DataType)*static_cast<unsigned long>(num_samples));
+        if (this->canSmartRead()){
+            success_read_length = this->getSmartRead(tmp_ptr, static_cast<size_t>(num_samples));
+            //if (count != static_cast<size_t>(numSamples)){
+            //    printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %zu, %zu/%zu\n", numSamples, count, _buffer_pcm_L->getFrameCount(), _buffer_pcm_L->getMaxFrameCount());
+            //}
+            memcpy(output_buffer->getWritePointer(channel, start_sample), tmp_ptr, sizeof(DataType) * success_read_length);
+        }
+        free(tmp_ptr);
+        return success_read_length;
     }
 
     size_t getSamplesPerFrame(){

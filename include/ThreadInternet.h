@@ -27,10 +27,6 @@ private:
     std::atomic<bool> _isStopped;
     // The number of samples in the ring buffer. This is also the buffer size in CURL.
     size_t _write_buf_size;
-
-    // Two-stage writing in write_function()
-    char* _write_buf;
-    size_t _write_buf_available_data_count;
 };
 
 #endif

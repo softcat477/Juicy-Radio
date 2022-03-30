@@ -11,8 +11,8 @@
 
 #include <fstream>
 
-ThreadDecoder::ThreadDecoder(RingBuffer<char>* mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size): // 1152, 128
-                mp3_buffer(mp3_buffer){
+ThreadDecoder::ThreadDecoder(RingBuffer<char>* ref_mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size): // 1152, 128
+                mp3_buffer(ref_mp3_buffer){
     /*
      * Input:
      *  <mp3_buffer>: Read mp3 frames from this buffer and decode frames into floating points.
@@ -78,33 +78,23 @@ enum mad_flow ThreadDecoder::input(void *data, struct mad_stream *stream){
         return MAD_FLOW_STOP;
     }
 
-    // Available frames
-    if (thread_decoder->mp3_buffer->canRead()){
-        // V2. Good PCM, https://stackoverflow.com/questions/39803572/libmad-playback-too-fast-if-read-in-chunks
-        // 0. Incomplete frames from the last decode round.
-        size_t length_l = stream->bufend - stream->next_frame;
-        if (length_l != 0){
-            // 1. The next chunk of data from LIBCURL
-            const char* ptr_r = thread_decoder->mp3_buffer->getReadPtr();
-            size_t length_r = thread_decoder->mp3_buffer->getReadLength();
-            // 2. Merge step0 and step 1 together. Step 0 is on the left side and step 1 is on the right
-            unsigned char* ptr = (unsigned char*)malloc(length_l + length_r);
-            memcpy(ptr, stream->next_frame, length_l);
-            memcpy(ptr+length_l, ptr_r, length_r);
+    // With SmartRead()
+    size_t target_read_length = thread_decoder->mp3_buffer->getSamplesPerFrame();
+    juce::AudioBuffer<char> tmp_audioBuffer{1, static_cast<int>(target_read_length)};
+    size_t success_read_length = thread_decoder->mp3_buffer->lazySmartRead(&tmp_audioBuffer, 0, static_cast<int>(target_read_length), 0);
+    size_t length_l = stream->bufend - stream->next_frame;
 
-            mad_stream_buffer(stream, ptr, (unsigned long)(length_l + length_r)); // The address to the location storing the binary data.
-        }
-        else{
-            const char* read_ptr = thread_decoder->mp3_buffer->getReadPtr();
-            size_t read_size = thread_decoder->mp3_buffer->getReadLength();
-            mad_stream_buffer(stream, reinterpret_cast<const unsigned char*>(read_ptr), read_size);
-        }
+    if (length_l+success_read_length != 0){
+        unsigned char* ptr = (unsigned char*)malloc(length_l + success_read_length);
+        memcpy(ptr, stream->next_frame, length_l);
+        memcpy(ptr+length_l, tmp_audioBuffer.getReadPointer(0), success_read_length);
 
-        thread_decoder->mp3_buffer->finishRead(true);
+        mad_stream_buffer(stream, ptr, (unsigned long)(length_l + success_read_length)); // The address to the location storing the binary data.
+        //libmad clean this up for you I guess? Don't free the memory or you'll get crappy sound :<
+        //free(ptr); 
     }
-    // Skip this frame
     else{
-        printf ("Buggy in ThreadDecoder\n");
+        printf ("Buggy in ThreadDecoder::input\n");
     }
 
     return MAD_FLOW_CONTINUE;
@@ -161,26 +151,11 @@ enum mad_flow ThreadDecoder::output(void *data, struct mad_header const *header,
     }
 
     ThreadDecoder* thread_decoder = static_cast<ThreadDecoder*>(data);
-    if (thread_decoder->pcm_buffer_L->canSmartWrite()){
-        size_t ret = thread_decoder->pcm_buffer_L->smartWrite(buf_L, buf_idx);
-        if (ret != buf_idx){
-            printf ("pcm_buffer_L, Write %zu/%zu\n", ret, buf_idx);
-        }
-        thread_decoder->pcm_buffer_L->finishSmartWrite();
-    }
-    else{
-        printf ("ThreadDecoder.cpp:output: Can't write to pcm_buffer_L %zu/%zu\n", thread_decoder->pcm_buffer_L->getFrameCount(), thread_decoder->pcm_buffer_L->getMaxFrameCount());
-    }
-
-    if (thread_decoder->pcm_buffer_R->canSmartWrite()){
-        size_t ret = thread_decoder->pcm_buffer_R->smartWrite(buf_R, buf_idx);
-        if (ret != buf_idx){
-            printf ("pcm_buffer_R, Write %zu/%zu\n", ret, buf_idx);
-        }
-        thread_decoder->pcm_buffer_R->finishSmartWrite();
-    }
-    else{
-        //printf ("ThreadDecoder.cpp:output: Can't write to pcm_buffer_R %zu/%zu\n", thread_decoder->pcm_buffer_R->getFrameCount(), thread_decoder->pcm_buffer_R->getMaxFrameCount());
+    size_t success_written_length_L = thread_decoder->pcm_buffer_L->lazySmartWrite(buf_L, buf_idx);
+    size_t success_written_length_R = thread_decoder->pcm_buffer_R->lazySmartWrite(buf_R, buf_idx);
+    if (success_written_length_L == 0){
+        success_written_length_R += 0;
+        printf ("Can't write to pcm_buffer_L: %zu/%zu\n", thread_decoder->pcm_buffer_L->getFrameCount(), thread_decoder->pcm_buffer_L->getMaxFrameCount());
     }
 
     free(buf);

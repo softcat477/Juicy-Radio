@@ -77,27 +77,10 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     int startSample = bufferToFill.startSample;
     int numSamples = bufferToFill.numSamples;
     
-    // func()
-
-    float* tmp_ptr = (float*)malloc(sizeof(float)*static_cast<unsigned long>(numSamples));
-    if (this->_buffer_pcm_L->canSmartRead()){
-        size_t count = _buffer_pcm_L->getSmartRead(tmp_ptr, static_cast<size_t>(numSamples));
-        if (count != static_cast<size_t>(numSamples)){
-            printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %zu, %zu/%zu\n", numSamples, count, _buffer_pcm_L->getFrameCount(), _buffer_pcm_L->getMaxFrameCount());
-        }
-        memcpy(bufferToFill.buffer->getWritePointer(0, startSample), tmp_ptr, sizeof(float) * count);
-        bufferToFill.buffer->applyGain(0, 0, static_cast<int>(count), static_cast<float>(_output_gain));
-    }
-    if (this->_buffer_pcm_R->canSmartRead()){
-        size_t count = _buffer_pcm_R->getSmartRead(tmp_ptr, static_cast<size_t>(numSamples));
-        if (count != static_cast<size_t>(numSamples)){
-            printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %zu, %zu/%zu\n", numSamples, count, _buffer_pcm_R->getFrameCount(), _buffer_pcm_R->getMaxFrameCount());
-        }
-        // DEBUG, write decoded floating points to a file and synthesis .wav with python.
-        memcpy(bufferToFill.buffer->getWritePointer(1, startSample), tmp_ptr, sizeof(float) * count);
-        bufferToFill.buffer->applyGain(1, 0, static_cast<int>(count), static_cast<float>(_output_gain));
-    }
-    free (tmp_ptr);
+    size_t success_read_L = this->_buffer_pcm_L->lazySmartRead(bufferToFill.buffer, startSample, numSamples, 0);
+    bufferToFill.buffer->applyGain(0, 0, static_cast<int>(success_read_L), static_cast<float>(_output_gain));
+    size_t success_read_R = this->_buffer_pcm_R->lazySmartRead(bufferToFill.buffer, startSample, numSamples, 1);
+    bufferToFill.buffer->applyGain(1, 0, static_cast<int>(success_read_R), static_cast<float>(_output_gain));
 }
 void MainComponent::releaseResources()
 {
