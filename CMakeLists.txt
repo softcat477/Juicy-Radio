@@ -20,6 +20,7 @@ target_sources(${TargetName} PRIVATE
         src/ThreadInternet.cpp
         src/ThreadDecoder.cpp
         src/CondVar.cpp
+        src/IThreadManager.cpp
         main.cpp)
 target_compile_definitions(${TargetName} PRIVATE
         JUCE_WEB_BROWSER=0

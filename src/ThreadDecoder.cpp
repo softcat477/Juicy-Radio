@@ -198,12 +198,3 @@ void ThreadDecoder::start(){
 
     printf ("Quit ThreadDecoder::start() with code %d\n", result);
 }
-void ThreadDecoder::setStop(){
-    _isStopped.store(true);
-}
-void ThreadDecoder::setStart(){
-    _isStopped.store(false);
-}
-bool ThreadDecoder::isStopped(){
-    return _isStopped.load();
-}

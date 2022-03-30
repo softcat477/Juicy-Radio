@@ -11,7 +11,6 @@ struct memory{
 };
 
 ThreadInternet::ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count): // 8192, 128
-                                        _isStopped(false),
                                         _write_buf_size(write_buf_size){
     /*
      * Input:
@@ -68,10 +67,4 @@ size_t ThreadInternet::write_function(char *data, size_t size, size_t nmemb){
 
     size_t success_write_length = ring_buffer->lazySmartWrite(data, realsize);
     return realsize;
-}
-void ThreadInternet::setStop(){
-    _isStopped.store(true);
-}
-void ThreadInternet::setStart(){
-    _isStopped.store(false);
 }

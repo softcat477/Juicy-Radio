@@ -7,24 +7,21 @@
 #include <curl/curl.h>
 #include "RingBuffer.h"
 #include "CondVar.h"
+#include "IThreadManager.h"
 
-class ThreadInternet{
+class ThreadInternet: public IThreadManager{
+//class ThreadInternet{
 public:
     ThreadInternet() = delete;
     ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count);
-    ~ThreadInternet();
+    ~ThreadInternet() override;
 
-    void start();
+    void start() override;
     static size_t write_callback(char *data, size_t size, size_t nmemb, void *userdata);
     size_t write_function(char *data, size_t size, size_t nmemb);
 
-    void setStop();
-    void setStart();
-
     RingBuffer<char>* ring_buffer;
 private:
-    // A variable trigerred by main thread to infomr this thread to stop.
-    std::atomic<bool> _isStopped;
     // The number of samples in the ring buffer. This is also the buffer size in CURL.
     size_t _write_buf_size;
 };
