@@ -8,17 +8,18 @@
 
 #include "RingBuffer.h"
 #include "CondVar.h"
-//#include "IEncoderStream.h"
+#include "IEncoderStream.h"
 #include "IThreadManager.h"
+#include "IOParams.h"
 
 //class ThreadDecoder : public IEncoderStream{
-class ThreadDecoder:public IThreadManager{
+class ThreadDecoder:public IThreadManager, public IEncoderStream{
 public:
     ThreadDecoder() = delete;
     ThreadDecoder(RingBuffer<char>* mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size);
     ~ThreadDecoder() override;
 
-    //size_t EncodeAndSumIntoBuffer(FMixerEncoderOutputData*) override;
+    void encodeSumIntoBuffer(EncoderInputData* e_in, EncoderOutputData* e_out) override;
 
     void start() override;
 

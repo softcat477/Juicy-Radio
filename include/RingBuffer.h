@@ -61,7 +61,7 @@ public:
     bool canSmartWrite(){
         return canWrite();
     }
-    size_t smartWrite(DataType* input, size_t write_samples_length){
+    size_t smartWrite(const DataType* input, size_t write_samples_length){
         /*
          * Write <write_length> data from input to the ring buffer.
          * Return :
@@ -133,12 +133,12 @@ public:
         auto old_read_idx = _read_idx;
         _read_idx = (_read_idx + 1) % _max_frame_count;
         if (decrement){
-            _frame_count.fetch_sub(1);
             // Clean up unused position.
             // This is for the smartWrite function
             DataType* old_read_ptr = _juce_buffer.getWritePointer(0, static_cast<int>(old_read_idx * _samples_per_frame));
             memset(old_read_ptr, 0, sizeof(DataType) * this->_samples_per_frame);
             *(_buffer_length+old_read_idx) = 0;
+            _frame_count.fetch_sub(1);
         }
     }
 
@@ -182,16 +182,15 @@ public:
     // The lazy function handles the can-get-finish standard for you.
     // If you're not using these lazy functions, make sure you follow the standard.
     // --- Use lazy function when two threads share the same data.!
-    size_t lazySmartWrite(DataType* input, size_t write_samples_length){
-        /*
-        Write <write_samples_length> data from <input> to the buffer.
-        Use smartWrite internally and handle the can-get-finish standard for you.
-        Input:
-            input: A pointer to the data that should be written to the buffer.
-            write_samples_length: The number of data you want to write.
-        Output:
-            The number of written samples.
-        */
+
+    // Write <write_samples_length> data from <input> to the buffer.
+    // Use smartWrite internally and handle the can-get-finish standard for you.
+    // Input:
+    //     input: A pointer to the data that should be written to the buffer.
+    //     write_samples_length: The number of data you want to write.
+    // Output:
+    //     The number of written samples.
+    size_t lazySmartWrite(const DataType* input, size_t write_samples_length){
         size_t success_written_length = 0;
         if (this->canSmartWrite()){
             //size_t ret = this->smartWrite(input, write_samples_length);
@@ -200,17 +199,16 @@ public:
         }
         return success_written_length;
     }
+
+    // Read <num_samples> samples and write them to the <output_buffer> at offset <start_sample>, channel <channel>
+    // Input:
+    //     output_buffer: The object that stores the read samples.
+    //     start_sample: The output offset of the <output_buffer>.
+    //     num_samples: Try to read this amount of samples.
+    //     channel: The output channel of the <output_buffer>
+    // Output:
+    //    The number of read samples.
     size_t lazySmartRead(juce::AudioBuffer<DataType>* output_buffer, int start_sample, int num_samples, int channel){
-        /*
-        Read <num_samples> samples and write them to the <output_buffer> at offset <start_sample>, channel <channel>
-        Input:
-            output_buffer: The object that stores the read samples.
-            start_sample: The output offset of the <output_buffer>.
-            num_samples: Try to read this amount of samples.
-            channel: The output channel of the <output_buffer>
-        Output:
-            The number of read samples.
-        */
         size_t success_read_length = 0;
         DataType* tmp_ptr = (DataType*)malloc(sizeof(DataType)*static_cast<unsigned long>(num_samples));
         if (this->canSmartRead()){

@@ -198,3 +198,21 @@ void ThreadDecoder::start(){
 
     printf ("Quit ThreadDecoder::start() with code %d\n", result);
 }
+
+void ThreadDecoder::encodeSumIntoBuffer(EncoderInputData* e_in, EncoderOutputData* e_out){
+    // Checked
+    // Copy to intermediate buffer
+    size_t required_sample_count = e_in->required_sample_count;
+    juce::AudioBuffer<float> intermediate_buf{2, static_cast<int>(required_sample_count)};
+    intermediate_buf.clear();
+
+    size_t success_sample_L = pcm_buffer_L->lazySmartRead(&intermediate_buf, 0, static_cast<int>(required_sample_count), 0);
+    size_t success_sample_R = pcm_buffer_R->lazySmartRead(&intermediate_buf, 0, static_cast<int>(required_sample_count), 1);
+
+    // Add to the output buffer
+    juce::AudioBuffer<float>* audio_buffer = e_out->audio_buffer;
+    audio_buffer->addFrom(0, 0, intermediate_buf, 0, 0, static_cast<int>(success_sample_L));
+    audio_buffer->addFrom(1, 0, intermediate_buf, 1, 0, static_cast<int>(success_sample_R));
+    e_out->sample_count_L = success_sample_L;
+    e_out->sample_count_R = success_sample_R;
+}

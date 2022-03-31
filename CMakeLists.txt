@@ -21,6 +21,8 @@ target_sources(${TargetName} PRIVATE
         src/ThreadDecoder.cpp
         src/CondVar.cpp
         src/IThreadManager.cpp
+        src/ThreadChannel.cpp
+        src/ChannelStrip.cpp
         main.cpp)
 target_compile_definitions(${TargetName} PRIVATE
         JUCE_WEB_BROWSER=0

@@ -6,6 +6,7 @@
 #include <thread>
 #include "../include/ThreadInternet.h"
 #include "../include/ThreadDecoder.h"
+#include "../include/ThreadChannel.h"
 #include "../include/RingBuffer.h"
 #include "../include/CondVar.h"
 
@@ -42,6 +43,7 @@ private:
 
     std::thread _thread_internet;
     std::thread _thread_decoder;
+    std::thread _thread_channel;
 
     // Connect to a radio station and receive mp3 frames with LIBCURL.
     // Hold a RingBuffer to store chunks of data, and use _cond_mp3 to inform
@@ -51,6 +53,9 @@ private:
     // Connect to ThreadInternet::RingBuffer and decode mp3 frames into floating points
     // and store them into TWO ring buffers (left channel and right channel)
     ThreadDecoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
+
+    ThreadChannel _channel_manager;
+
 
     // Read from these two RingBuffer pointer and send to the audio device.
     // Point to the ring buffer holded by ThreadDecoder

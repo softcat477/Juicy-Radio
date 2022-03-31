@@ -1,6 +1,7 @@
 #include "../include/MainComponent.h"
 #include "../include/RingBuffer.h"
 #include "../include/ThreadInternet.h"
+#include "../include/IOParams.h"
 
 #include <stdio.h>
 #include <fstream>
@@ -14,11 +15,14 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
                         _sample_per_frame(sample_per_frame),
                         _max_frame_count(max_frame_count),
                         _internet_manager(sample_per_frame, max_frame_count), // 8192, 128
-                        _decoder_manager(_internet_manager.ring_buffer, 1152, 512) // pass, 1152, 128
+                        _decoder_manager(_internet_manager.ring_buffer, 1152, 512), // pass, 1152, 128
+                        _channel_manager(512, 1152, &_decoder_manager)
 {
     // Points to ring buffers that store the decoded floating points.
-    _buffer_pcm_L = _decoder_manager.pcm_buffer_L;
-    _buffer_pcm_R = _decoder_manager.pcm_buffer_R;
+    //_buffer_pcm_L = _decoder_manager.pcm_buffer_L;
+    //_buffer_pcm_R = _decoder_manager.pcm_buffer_R;
+    _buffer_pcm_L = _channel_manager.stereo_out_L;
+    _buffer_pcm_R = _channel_manager.stereo_out_R;
 
     // Open Button
     addAndMakeVisible(_open_button);
@@ -41,6 +45,7 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     // Start two threads
     this->_thread_internet = std::thread(&ThreadInternet::start, &_internet_manager);
     this->_thread_decoder = std::thread(&ThreadDecoder::start, &_decoder_manager);
+    this->_thread_channel = std::thread(&ThreadChannel::start, &_channel_manager);
 
     setSize(300, 200);
 
@@ -53,8 +58,10 @@ MainComponent::~MainComponent()
 void MainComponent::shutdown(){
     _internet_manager.setStop();
     _decoder_manager.setStop();
+    _channel_manager.setStop();
     this->_thread_internet.join();
     this->_thread_decoder.join();
+    this->_thread_channel.join();
 }
 void MainComponent::paint(juce::Graphics& g)
 {
