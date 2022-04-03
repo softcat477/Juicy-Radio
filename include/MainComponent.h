@@ -9,6 +9,7 @@
 #include "../include/ThreadChannel.h"
 #include "../include/RingBuffer.h"
 #include "../include/CondVar.h"
+#include "ChannelGui.h"
 
 namespace AudioApp
 {
@@ -35,6 +36,7 @@ private:
     juce::TextButton _open_button;
     juce::TextButton _clear_button;
     juce::Slider _db_slider;
+    ChannelGui* _stereo_out_gui;
 
     double _output_gain;
 

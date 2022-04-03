@@ -42,12 +42,16 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     _db_slider.setTextValueSuffix (" dB");
     _db_slider.setNumDecimalPlacesToDisplay(2);
 
+    // stereo out
+    _stereo_out_gui = _channel_manager.getStereoOut();
+    addAndMakeVisible(*_stereo_out_gui);
+
     // Start two threads
     this->_thread_internet = std::thread(&ThreadInternet::start, &_internet_manager);
     this->_thread_decoder = std::thread(&ThreadDecoder::start, &_decoder_manager);
     this->_thread_channel = std::thread(&ThreadChannel::start, &_channel_manager);
 
-    setSize(300, 200);
+    setSize(640, 480);
 
     setAudioChannels(0, 2);
 }
@@ -72,6 +76,9 @@ void MainComponent::resized()
     _open_button.setBounds(10, 10, getWidth()-20, 20);
     _clear_button.setBounds(10, 40, getWidth()-20, 20);
     _db_slider.setBounds(10, 70, getWidth()-20, 20);
+
+    auto area = getLocalBounds();
+    _stereo_out_gui->setBounds(area.removeFromRight(_stereo_out_gui->channel_width));
 }
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)

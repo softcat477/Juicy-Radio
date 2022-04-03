@@ -30,12 +30,13 @@ void ThreadChannel::start(){
         _stereo_out.processAndMixAudio(&out_buffer, success_sample_L, success_sample_R, _buf_size);
 
         if (success_sample_L == 0 && success_sample_R == 0){
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
         // Write to to ring_buffer
         if (success_sample_L > 0){
             size_t success_L = stereo_out_L->lazySmartWrite(out_buffer.getReadPointer(0), success_sample_L);
+            printf ("SUS\n");
         }
         if (success_sample_R > 0){
             size_t success_R = stereo_out_R->lazySmartWrite(out_buffer.getReadPointer(1), success_sample_R );

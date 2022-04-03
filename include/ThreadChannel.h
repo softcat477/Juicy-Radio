@@ -5,6 +5,7 @@
 #include "RingBuffer.h"
 #include "ChannelStrip.h"
 #include "IOParams.h"
+#include "ChannelGui.h"
 
 class ThreadChannel:public IThreadManager{
 public:
@@ -12,6 +13,7 @@ public:
     ~ThreadChannel() override;
 
     void start() override;
+    ChannelGui* getStereoOut(){return _stereo_out.getChanelGui();}
 
     RingBuffer<float>* stereo_out_L;
     RingBuffer<float>* stereo_out_R;

@@ -2,13 +2,21 @@
 #define IOPARAMS_H
 
 #include <vector>
+#include <atomic>
 #include <juce_audio_utils/juce_audio_utils.h>
 
 struct ChannelStripSetting{
-    float _pre_dB;
+    std::atomic<float> _pre_dB;
     //td::vector<AudioFxId> _audio_fx_ids;
-    float _post_dB;
-    float _pan;
+    std::atomic<float> _post_dB;
+    std::atomic<float> _pan;
+
+    float getPreDb() const {return _pre_dB.load();}
+    float getPostDb() const {return _post_dB.load();}
+    float getPan() const {return _pan.load();}
+    void setPreDb(float pre_dB){_pre_dB.store(pre_dB);}
+    void setPostDb(float post_dB){_post_dB.store(post_dB);}
+    void setPan(float pan){_pan.store(pan);}
 
     ChannelStripSetting(float pre_dB, float post_dB, float pan):
                     _pre_dB(pre_dB),
@@ -16,9 +24,12 @@ struct ChannelStripSetting{
                     _pan(pan){
     }
     ChannelStripSetting(const ChannelStripSetting& copied){
-        _pre_dB = copied._pre_dB;
-        _post_dB = copied._post_dB;
-        _pan = copied._pan;
+        setPreDb(copied.getPreDb());
+        setPostDb(copied.getPostDb());
+        setPan(copied.getPan());
+        //_pre_dB = copied._pre_dB;
+        //_post_dB = copied._post_dB;
+        //_pan = copied._pan;
     }
 };
 
@@ -46,7 +57,7 @@ struct EncoderOutputData
 
     EncoderOutputData() = delete;
     EncoderOutputData(juce::AudioBuffer<float>* in_audio_buffer):
-                    audio_buffer(in_audio_buffer), sample_count_L(-1), sample_count_R(-1){}
+                    audio_buffer(in_audio_buffer), sample_count_L(0), sample_count_R(0){}
 };
 // = = = = =
 // Decoder Stream

@@ -1,9 +1,11 @@
 #include "../include/ChannelStrip.h"
-ChannelStrip::ChannelStrip():_channel_setting(0.0, 0.0, 0.0){
+ChannelStrip::ChannelStrip():_channel_setting(0.0, 0.0, 0.0),
+                             _channel_gui(&_channel_setting){
 
 }
 ChannelStrip::ChannelStrip(ChannelStripSetting channel_strip_setting):
-                    _channel_setting(channel_strip_setting){
+                    _channel_setting(channel_strip_setting),
+                    _channel_gui(&_channel_setting){
 
 }
 ChannelStrip::~ChannelStrip(){
@@ -27,14 +29,23 @@ bool ChannelStrip::remove(IEncoderStream* encoder_stream){
     printf ("ChannelStrip::remove(IEncoderStream*) not implemented!\n");
     return false;
 }
-void ChannelStrip::setPreGain(float pre_db){
-    _channel_setting._pre_dB = pre_db;
+void ChannelStrip::setPreDb(float pre_db){
+    _channel_setting.setPreDb(pre_db);
 }
-void ChannelStrip::setPostGain(float post_db){
-    _channel_setting._post_dB = post_db;
+void ChannelStrip::setPostDb(float post_db){
+    _channel_setting.setPostDb(post_db);
 }
 void ChannelStrip::setPan(float pan){
-    _channel_setting._pan = pan;
+    _channel_setting.setPan(pan);
+}
+float ChannelStrip::getPreDb(){
+    return _channel_setting.getPreDb();
+}
+float ChannelStrip::getPostDb(){
+        return _channel_setting.getPostDb();
+}
+float ChannelStrip::getPan(){
+    return _channel_setting.getPan();
 }
 
 void ChannelStrip::processAndMixAudio(juce::AudioBuffer<float>* out_buffer, int& out_success_sample_L, int& out_success_sample_R, size_t required_samples){
@@ -65,7 +76,11 @@ void ChannelStrip::processAndMixAudio(juce::AudioBuffer<float>* out_buffer, int&
     // Skip
 
     // 4. Apply post gain
-    //out_buffer->applyGain(0, static_cast<int>(required_samples), juce::Decibels::decibelsToGain(_channel_setting._post_dB));
+    float post_dB = getPostDb();
+    float post_gain = juce::Decibels::decibelsToGain(post_dB);
+    printf("fader: %f\n", post_gain);
+    out_buffer->applyGain(0, 0, static_cast<int>(out_success_sample_L), juce::Decibels::decibelsToGain(post_dB));
+    out_buffer->applyGain(1, 0, static_cast<int>(out_success_sample_R), juce::Decibels::decibelsToGain(post_dB));
 
     // 5. Pan
     // Skip

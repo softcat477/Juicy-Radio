@@ -26,7 +26,7 @@ AudioApp::MainWindow::MainWindow(const juce::String& name)
         setFullScreen(true);
     else
     {
-        setResizable(true, true);
+        setResizable(false, false);
         centreWithSize(getWidth(), getHeight());
     }
 

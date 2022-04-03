@@ -23,6 +23,7 @@ target_sources(${TargetName} PRIVATE
         src/IThreadManager.cpp
         src/ThreadChannel.cpp
         src/ChannelStrip.cpp
+        src/ChannelGui.cpp
         main.cpp)
 target_compile_definitions(${TargetName} PRIVATE
         JUCE_WEB_BROWSER=0
