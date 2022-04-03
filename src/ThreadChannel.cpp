@@ -5,7 +5,7 @@
 #include <thread>
 
 ThreadChannel::ThreadChannel(size_t buf_size, size_t buf_max_frame, IEncoderStream* mp3_decoder):
-                _buf_size(buf_size), _stereo_out(), tmp_mp3_decoder(mp3_decoder){
+                _buf_size(buf_size), _stereo_out(){
     stereo_out_L = new RingBuffer<float>(_buf_size, buf_max_frame);
     stereo_out_R = new RingBuffer<float>(_buf_size, buf_max_frame);
 
@@ -15,7 +15,10 @@ ThreadChannel::~ThreadChannel(){
     delete stereo_out_L;
     delete stereo_out_R;
 }
-
+void ThreadChannel::start(){
+    printf ("ThreadChannel::start() is not implemented yet :<");
+}
+/*
 void ThreadChannel::start(){
     while (true){
         if (this->_isStopped.load() == true){
@@ -47,7 +50,6 @@ void ThreadChannel::start(){
         // Skip
 
         // Debug: A noise generator, SUCCESS!
-        /*
         juce::Random random{};
         juce::AudioBuffer<float> out_buffer{2, static_cast<int>(_buf_size)};
         out_buffer.clear();
@@ -58,7 +60,10 @@ void ThreadChannel::start(){
             for (auto sample = 0; sample < _buf_size; ++sample)
                 buffer[sample] = random.nextFloat() * 1.0f - 0.5f;
         }
-        */
     }
     printf ("Quit ThreadChannel::start()\n");
+}
+*/
+void ThreadChannel::getNextAudioBlock(juce::AudioBuffer<float>* out_buffer, int num_samples, int& success_sample_L, int& success_sample_R){
+    _stereo_out.processAndMixAudio(out_buffer, success_sample_L, success_sample_R, static_cast<size_t>(num_samples));
 }

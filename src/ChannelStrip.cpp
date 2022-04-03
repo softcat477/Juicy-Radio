@@ -29,6 +29,7 @@ bool ChannelStrip::remove(IEncoderStream* encoder_stream){
     printf ("ChannelStrip::remove(IEncoderStream*) not implemented!\n");
     return false;
 }
+/*
 void ChannelStrip::setPreDb(float pre_db){
     _channel_setting.setPreDb(pre_db);
 }
@@ -38,6 +39,7 @@ void ChannelStrip::setPostDb(float post_db){
 void ChannelStrip::setPan(float pan){
     _channel_setting.setPan(pan);
 }
+*/
 float ChannelStrip::getPreDb(){
     return _channel_setting.getPreDb();
 }

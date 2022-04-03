@@ -20,10 +20,11 @@ public:
 
     bool remove(ChannelStrip*);
     bool remove(IEncoderStream*);
-
+    /*
     void setPreDb(float pre_db);
     void setPostDb(float post_db);
     void setPan(float pan);
+    */
     float getPreDb();
     float getPostDb();
     float getPan();

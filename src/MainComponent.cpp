@@ -49,7 +49,7 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     // Start two threads
     this->_thread_internet = std::thread(&ThreadInternet::start, &_internet_manager);
     this->_thread_decoder = std::thread(&ThreadDecoder::start, &_decoder_manager);
-    this->_thread_channel = std::thread(&ThreadChannel::start, &_channel_manager);
+    //this->_thread_channel = std::thread(&ThreadChannel::start, &_channel_manager);
 
     setSize(640, 480);
 
@@ -62,10 +62,10 @@ MainComponent::~MainComponent()
 void MainComponent::shutdown(){
     _internet_manager.setStop();
     _decoder_manager.setStop();
-    _channel_manager.setStop();
+    //_channel_manager.setStop();
     this->_thread_internet.join();
     this->_thread_decoder.join();
-    this->_thread_channel.join();
+    //this->_thread_channel.join();
 }
 void MainComponent::paint(juce::Graphics& g)
 {
@@ -90,11 +90,21 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     bufferToFill.clearActiveBufferRegion();
     int startSample = bufferToFill.startSample;
     int numSamples = bufferToFill.numSamples;
-    
+
+    juce::AudioBuffer<float> tmp_audiobuffer{2, numSamples};
+    tmp_audiobuffer.clear();
+    int success_sample_L = 0;
+    int success_sample_R = 0;
+    _channel_manager.getNextAudioBlock(&tmp_audiobuffer, numSamples, success_sample_L, success_sample_R);
+
+    bufferToFill.buffer->copyFrom(0, startSample, tmp_audiobuffer, 0, 0, success_sample_L);
+    bufferToFill.buffer->copyFrom(1, startSample, tmp_audiobuffer, 1, 0, success_sample_R);
+    /* Submix thread
     size_t success_read_L = this->_buffer_pcm_L->lazySmartRead(bufferToFill.buffer, startSample, numSamples, 0);
     bufferToFill.buffer->applyGain(0, 0, static_cast<int>(success_read_L), static_cast<float>(_output_gain));
     size_t success_read_R = this->_buffer_pcm_R->lazySmartRead(bufferToFill.buffer, startSample, numSamples, 1);
     bufferToFill.buffer->applyGain(1, 0, static_cast<int>(success_read_R), static_cast<float>(_output_gain));
+    */
 }
 void MainComponent::releaseResources()
 {

@@ -15,15 +15,14 @@ public:
     void start() override;
     ChannelGui* getStereoOut(){return _stereo_out.getChanelGui();}
 
+    void getNextAudioBlock(juce::AudioBuffer<float>* out_buffer, int num_samples, int& success_sample_L, int& success_sample_R);
+
     RingBuffer<float>* stereo_out_L;
     RingBuffer<float>* stereo_out_R;
 private:
     size_t _buf_size;
     ChannelStrip _stereo_out;
     std::vector<ChannelStrip> _channels;
-
-    // Debug usage
-    IEncoderStream* tmp_mp3_decoder;
 };
 
 #endif

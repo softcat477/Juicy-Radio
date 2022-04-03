@@ -6,30 +6,30 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 struct ChannelStripSetting{
-    std::atomic<float> _pre_dB;
+    std::atomic<float> pre_dB;
     //td::vector<AudioFxId> _audio_fx_ids;
-    std::atomic<float> _post_dB;
-    std::atomic<float> _pan;
+    std::atomic<float> post_dB;
+    std::atomic<float> pan;
 
-    float getPreDb() const {return _pre_dB.load();}
-    float getPostDb() const {return _post_dB.load();}
-    float getPan() const {return _pan.load();}
-    void setPreDb(float pre_dB){_pre_dB.store(pre_dB);}
-    void setPostDb(float post_dB){_post_dB.store(post_dB);}
-    void setPan(float pan){_pan.store(pan);}
+    float getPreDb() const {return pre_dB.load();}
+    float getPostDb() const {return post_dB.load();}
+    float getPan() const {return pan.load();}
+    void setPreDb(float in_pre_dB){pre_dB.store(in_pre_dB);}
+    void setPostDb(float in_post_dB){post_dB.store(in_post_dB);}
+    void setPan(float in_pan){pan.store(in_pan);}
 
-    ChannelStripSetting(float pre_dB, float post_dB, float pan):
-                    _pre_dB(pre_dB),
-                    _post_dB(post_dB),
-                    _pan(pan){
+    ChannelStripSetting(float in_pre_dB, float in_post_dB, float in_pan):
+                    pre_dB(in_pre_dB),
+                    post_dB(in_post_dB),
+                    pan(in_pan){
     }
     ChannelStripSetting(const ChannelStripSetting& copied){
         setPreDb(copied.getPreDb());
         setPostDb(copied.getPostDb());
         setPan(copied.getPan());
-        //_pre_dB = copied._pre_dB;
-        //_post_dB = copied._post_dB;
-        //_pan = copied._pan;
+        //pre_dB = copied.pre_dB;
+        //post_dB = copied.post_dB;
+        //pan = copied.pan;
     }
 };
 
