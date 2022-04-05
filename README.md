@@ -1,4 +1,6 @@
 # Juicy Radio
+![](teaser/banner.jpg)
+
 A radio station implemented with `JUCE` and `libmad` and `libcurl`
 
 `libmad`:http://m.baert.free.fr/contrib/docs/libmad/doxy/html/index.html
