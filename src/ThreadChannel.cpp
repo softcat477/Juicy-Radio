@@ -66,4 +66,5 @@ void ThreadChannel::start(){
 */
 void ThreadChannel::getNextAudioBlock(juce::AudioBuffer<float>* out_buffer, int num_samples, int& success_sample_L, int& success_sample_R){
     _stereo_out.processAndMixAudio(out_buffer, success_sample_L, success_sample_R, static_cast<size_t>(num_samples));
+
 }

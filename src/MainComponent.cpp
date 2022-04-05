@@ -18,9 +18,8 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
                         _decoder_manager(_internet_manager.ring_buffer, 1152, 512), // pass, 1152, 128
                         _channel_manager(512, 1152, &_decoder_manager)
 {
+    /*
     // Points to ring buffers that store the decoded floating points.
-    //_buffer_pcm_L = _decoder_manager.pcm_buffer_L;
-    //_buffer_pcm_R = _decoder_manager.pcm_buffer_R;
     _buffer_pcm_L = _channel_manager.stereo_out_L;
     _buffer_pcm_R = _channel_manager.stereo_out_R;
 
@@ -41,6 +40,7 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     _db_slider.addListener(this);
     _db_slider.setTextValueSuffix (" dB");
     _db_slider.setNumDecimalPlacesToDisplay(2);
+    */
 
     // stereo out
     _stereo_out_gui = _channel_manager.getStereoOut();
@@ -54,6 +54,8 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     setSize(640, 480);
 
     setAudioChannels(0, 2);
+
+    printf ("Gain 0.5 = %f dB\n",  juce::Decibels::gainToDecibels(0.5));
 }
 MainComponent::~MainComponent()
 {
@@ -73,12 +75,14 @@ void MainComponent::paint(juce::Graphics& g)
 }
 void MainComponent::resized()
 {
+    /*
     _open_button.setBounds(10, 10, getWidth()-20, 20);
     _clear_button.setBounds(10, 40, getWidth()-20, 20);
     _db_slider.setBounds(10, 70, getWidth()-20, 20);
+    */
 
     auto area = getLocalBounds();
-    _stereo_out_gui->setBounds(area.removeFromRight(_stereo_out_gui->channel_width));
+    _stereo_out_gui->setBounds(area.removeFromLeft(_stereo_out_gui->channel_width));
 }
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)

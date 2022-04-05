@@ -1,5 +1,10 @@
 #include "../include/ChannelStrip.h"
-ChannelStrip::ChannelStrip():_channel_setting(0.0, 0.0, 0.0),
+#include <math.h>
+ChannelStrip::ChannelStrip(juce::AudioDeviceManager::AudioDeviceSetup device_spec):_channel_setting(0.0, 0.0, 0.0, device_spec),
+                             _channel_gui(&_channel_setting){
+
+}
+ChannelStrip::ChannelStrip():_channel_setting(0.0, 0.0, 0.0, 44100.0, 300),
                              _channel_gui(&_channel_setting){
 
 }
@@ -77,12 +82,20 @@ void ChannelStrip::processAndMixAudio(juce::AudioBuffer<float>* out_buffer, int&
     // 3. Apply Audio FXs
     // Skip
 
+    // Pan
+    float pan = getPan();
+    float theta = juce::jmap(pan, static_cast<float>(-1.0), static_cast<float>(1.0),
+                             static_cast<float>(0.0), static_cast<float>(M_PI/2.0));
+    float pan_gan_L = cos(theta);
+    float pan_gan_R = sin(theta);
+    out_buffer->applyGain(0, 0, static_cast<int>(out_success_sample_L), pan_gan_L);
+    out_buffer->applyGain(1, 0, static_cast<int>(out_success_sample_R), pan_gan_R);
+
     // 4. Apply post gain
     float post_dB = getPostDb();
-    float post_gain = juce::Decibels::decibelsToGain(post_dB);
-    printf("fader: %f\n", post_gain);
     out_buffer->applyGain(0, 0, static_cast<int>(out_success_sample_L), juce::Decibels::decibelsToGain(post_dB));
     out_buffer->applyGain(1, 0, static_cast<int>(out_success_sample_R), juce::Decibels::decibelsToGain(post_dB));
+    _channel_gui.updateAudioMeter(out_buffer, out_success_sample_R, out_success_sample_R);
 
     // 5. Pan
     // Skip
