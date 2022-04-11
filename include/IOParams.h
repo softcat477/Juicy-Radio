@@ -49,6 +49,10 @@ struct ChannelStripSetting{
         //post_dB = copied.post_dB;
         //pan = copied.pan;
     }
+
+    ChannelStripSetting& operator=(ChannelStripSetting& other) = delete;
+    ChannelStripSetting(ChannelStripSetting&& other) = delete;
+    ChannelStripSetting& operator=(ChannelStripSetting&& other) = delete;
 };
 
 // = = = = =

@@ -14,6 +14,11 @@ public:
     AudioMeter(float sr, float window_size_ms);
     ~AudioMeter() override;
 
+    AudioMeter(AudioMeter& other) = delete;
+    AudioMeter& operator=(AudioMeter& other)=delete;
+    AudioMeter(AudioMeter&& other) = delete;
+    AudioMeter& operator=(AudioMeter&& other)=delete;
+
     void paint(juce::Graphics& g) override;
     void resized() override;
     void audioBuffer2Rms(const juce::AudioBuffer<float>* out_buffer, int out_success_sample_L, int out_success_sample_R);
@@ -37,6 +42,11 @@ public:
     ChannelGui() = delete;
     ChannelGui(ChannelStripSetting*);
     ~ChannelGui();
+
+    ChannelGui(ChannelGui& other) = delete;
+    ChannelGui& operator=(ChannelGui& other) = delete;
+    ChannelGui(ChannelGui&& other) = delete;
+    ChannelGui& operator=(ChannelGui&& other) = delete;
 
     void paint(juce::Graphics& g);
     void resized();

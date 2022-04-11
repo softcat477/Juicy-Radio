@@ -19,6 +19,11 @@ public:
     ThreadDecoder(RingBuffer<char>* mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size);
     ~ThreadDecoder() override;
 
+    ThreadDecoder(ThreadDecoder& other) = delete;
+    ThreadDecoder& operator=(ThreadDecoder& other) = delete;
+    ThreadDecoder(ThreadDecoder&& other) = delete;
+    ThreadDecoder& operator=(ThreadDecoder&& other) = delete;
+
     void encodeSumIntoBuffer(EncoderInputData* e_in, EncoderOutputData* e_out) override;
 
     void start() override;

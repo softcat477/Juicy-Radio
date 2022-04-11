@@ -17,6 +17,11 @@ public:
     ChannelStrip(ChannelStripSetting);
     ~ChannelStrip();
 
+    ChannelStrip(ChannelStrip& other) = delete;
+    ChannelStrip& operator=(ChannelStrip& other) = delete;
+    ChannelStrip(ChannelStrip&& other) = delete;
+    ChannelStrip& operator=(ChannelStrip&& other) = delete;
+
     bool connect(ChannelStrip*);
     bool connect(IEncoderStream*);
 

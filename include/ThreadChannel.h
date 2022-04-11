@@ -14,6 +14,11 @@ public:
     ThreadChannel(size_t buf_size, size_t buf_max_frame, IEncoderStream* mp3_decoder);
     ~ThreadChannel() override;
 
+    ThreadChannel(ThreadChannel& other) = delete;
+    ThreadChannel& operator=(ThreadChannel& other) = delete;
+    ThreadChannel(ThreadChannel&& other) = delete;
+    ThreadChannel& operator=(ThreadChannel&& other) = delete;
+
     void start() override;
     ChannelGui* getStereoOut(){return _stereo_out.getChanelGui();}
 

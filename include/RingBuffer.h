@@ -42,6 +42,11 @@ public:
         free(_buffer_length);
     }
 
+    RingBuffer(RingBuffer& other) = delete;
+    RingBuffer& operator=(RingBuffer& other) = delete;
+    RingBuffer(RingBuffer&& other) = delete;
+    RingBuffer& operator=(RingBuffer&& other) = delete;
+
     bool canWrite(){
         return _frame_count.load() != _max_frame_count;
     }

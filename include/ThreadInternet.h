@@ -16,6 +16,11 @@ public:
     ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count);
     ~ThreadInternet() override;
 
+    ThreadInternet(ThreadInternet& other) = delete;
+    ThreadInternet& operator=(ThreadInternet& other) = delete;
+    ThreadInternet(ThreadInternet&& other) = delete;
+    ThreadInternet& operator=(ThreadInternet&& other) = delete;
+
     void start() override;
     static size_t write_callback(char *data, size_t size, size_t nmemb, void *userdata);
     size_t write_function(char *data, size_t size, size_t nmemb);
