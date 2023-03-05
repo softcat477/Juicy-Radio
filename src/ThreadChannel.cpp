@@ -6,14 +6,9 @@
 
 ThreadChannel::ThreadChannel(size_t buf_size, size_t buf_max_frame, IEncoderStream* mp3_decoder):
                 _buf_size(buf_size), _stereo_out(){
-    // stereo_out_L = new RingBuffer<float>(_buf_size, buf_max_frame);
-    // stereo_out_R = new RingBuffer<float>(_buf_size, buf_max_frame);
-
     _stereo_out.connect(mp3_decoder);
 }
 ThreadChannel::~ThreadChannel(){
-    // delete stereo_out_L;
-    // delete stereo_out_R;
 }
 void ThreadChannel::start(){
     printf ("ThreadChannel::start() is not implemented yet :<");

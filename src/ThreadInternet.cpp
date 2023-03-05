@@ -20,14 +20,12 @@ ThreadInternet::ThreadInternet(size_t write_buf_size, size_t buf_max_frame_count
     ring_buffer = new RingBuffer<char>(write_buf_size, buf_max_frame_count);
 }
 ThreadInternet::~ThreadInternet(){
-    //free(_write_buf);
     delete ring_buffer;
 }
 void ThreadInternet::start(){
     // Start this thread
     CURL *curl = curl_easy_init();
 
-    //long write_buf_size = 4096;
     //char url[] = "http://ice.stream.frequence3.net/frequence3-128.mp3";
     char url[] = "https://stream.live.vc.bbcmedia.co.uk/bbc_radio_three";
     curl_easy_setopt(curl, CURLOPT_URL, url);

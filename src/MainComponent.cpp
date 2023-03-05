@@ -18,30 +18,6 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
                         _decoder_manager(_internet_manager.ring_buffer, 1152, 512), // pass, 1152, 128
                         _channel_manager(512, 1152, &_decoder_manager)
 {
-    /*
-    // Points to ring buffers that store the decoded floating points.
-    _buffer_pcm_L = _channel_manager.stereo_out_L;
-    _buffer_pcm_R = _channel_manager.stereo_out_R;
-
-    // Open Button
-    addAndMakeVisible(_open_button);
-    _open_button.setButtonText("Open");
-    _open_button.onClick = [this]{_openButtonClicked();};
-
-    // Close Button
-    addAndMakeVisible(_clear_button);
-    _clear_button.setButtonText("Close");
-    _clear_button.onClick = [this]{_clearButtonClicked();};
-
-    // dB Slider
-    addAndMakeVisible(_db_slider);
-    _db_slider.setRange(-36.0, 3.0);
-    _db_slider.setValue(-36.0);
-    _db_slider.addListener(this);
-    _db_slider.setTextValueSuffix (" dB");
-    _db_slider.setNumDecimalPlacesToDisplay(2);
-    */
-
     // stereo out
     _stereo_out_gui = _channel_manager.getStereoOut();
     addAndMakeVisible(*_stereo_out_gui);
@@ -49,7 +25,6 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     // Start two threads
     this->_thread_internet = std::thread(&ThreadInternet::start, &_internet_manager);
     this->_thread_decoder = std::thread(&ThreadDecoder::start, &_decoder_manager);
-    //this->_thread_channel = std::thread(&ThreadChannel::start, &_channel_manager);
 
     setSize(640, 480);
 
@@ -64,10 +39,8 @@ MainComponent::~MainComponent()
 void MainComponent::shutdown(){
     _internet_manager.setStop();
     _decoder_manager.setStop();
-    //_channel_manager.setStop();
     this->_thread_internet.join();
     this->_thread_decoder.join();
-    //this->_thread_channel.join();
 }
 void MainComponent::paint(juce::Graphics& g)
 {
@@ -75,12 +48,6 @@ void MainComponent::paint(juce::Graphics& g)
 }
 void MainComponent::resized()
 {
-    /*
-    _open_button.setBounds(10, 10, getWidth()-20, 20);
-    _clear_button.setBounds(10, 40, getWidth()-20, 20);
-    _db_slider.setBounds(10, 70, getWidth()-20, 20);
-    */
-
     auto area = getLocalBounds();
     _stereo_out_gui->setBounds(area.removeFromLeft(_stereo_out_gui->channel_width));
 }
@@ -103,12 +70,6 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 
     bufferToFill.buffer->copyFrom(0, startSample, tmp_audiobuffer, 0, 0, success_sample_L);
     bufferToFill.buffer->copyFrom(1, startSample, tmp_audiobuffer, 1, 0, success_sample_R);
-    /* Submix thread
-    size_t success_read_L = this->_buffer_pcm_L->read(bufferToFill.buffer, startSample, numSamples, 0);
-    bufferToFill.buffer->applyGain(0, 0, static_cast<int>(success_read_L), static_cast<float>(_output_gain));
-    size_t success_read_R = this->_buffer_pcm_R->read(bufferToFill.buffer, startSample, numSamples, 1);
-    bufferToFill.buffer->applyGain(1, 0, static_cast<int>(success_read_R), static_cast<float>(_output_gain));
-    */
 }
 void MainComponent::releaseResources()
 {
@@ -125,7 +86,6 @@ void MainComponent::_openButtonClicked()
 }
 void MainComponent::_clearButtonClicked()
 {
-    //_internet_manager.setStop();
     printf("Clear Button\n");
 }
 } // namespace GuiApp
