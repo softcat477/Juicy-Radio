@@ -104,9 +104,9 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     bufferToFill.buffer->copyFrom(0, startSample, tmp_audiobuffer, 0, 0, success_sample_L);
     bufferToFill.buffer->copyFrom(1, startSample, tmp_audiobuffer, 1, 0, success_sample_R);
     /* Submix thread
-    size_t success_read_L = this->_buffer_pcm_L->lazySmartRead(bufferToFill.buffer, startSample, numSamples, 0);
+    size_t success_read_L = this->_buffer_pcm_L->read(bufferToFill.buffer, startSample, numSamples, 0);
     bufferToFill.buffer->applyGain(0, 0, static_cast<int>(success_read_L), static_cast<float>(_output_gain));
-    size_t success_read_R = this->_buffer_pcm_R->lazySmartRead(bufferToFill.buffer, startSample, numSamples, 1);
+    size_t success_read_R = this->_buffer_pcm_R->read(bufferToFill.buffer, startSample, numSamples, 1);
     bufferToFill.buffer->applyGain(1, 0, static_cast<int>(success_read_R), static_cast<float>(_output_gain));
     */
 }

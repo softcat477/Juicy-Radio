@@ -65,6 +65,6 @@ size_t ThreadInternet::write_function(char *data, size_t size, size_t nmemb){
 
     size_t realsize = size * nmemb;
 
-    size_t success_write_length = ring_buffer->lazySmartWrite(data, realsize);
+    size_t success_write_length = ring_buffer->write(data, realsize);
     return realsize;
 }

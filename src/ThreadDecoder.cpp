@@ -10,6 +10,8 @@
 #include "../include/CondVar.h"
 
 #include <fstream>
+#include <iostream>
+#include <vector>
 
 ThreadDecoder::ThreadDecoder(RingBuffer<char>* ref_mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size): // 1152, 128
                 mp3_buffer(ref_mp3_buffer){
@@ -26,38 +28,6 @@ ThreadDecoder::~ThreadDecoder(){
     delete pcm_buffer_L;
     delete pcm_buffer_R;
 }
-/*
-size_t ThreadDecoder::EncodeAndSumIntoBuffer(FMixerEncoderOutputData* encoder_output_struct){
-    juce::AudioBuffer<float>* audio_buffer = encoder_output_struct->audio_buffer;
-    size_t sample_count = encoder_output_struct->sample_count;
-    size_t count_L = 0;
-    size_t count_R = 0;
-
-    float* tmp_ptr = (float*)malloc(sizeof(float)*sample_count);
-    if (this->pcm_buffer_L->canSmartRead()){
-        count_L = pcm_buffer_L->getSmartRead(tmp_ptr, sample_count);
-        if (count_L != sample_count){
-            printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %d\n", sample_count, count_L);
-        }
-        memcpy(audio_buffer->getWritePointer(0, 0), tmp_ptr, sizeof(float) * count_L);
-        // DEBUG, write decoded floating points to a file and synthesis .wav with python.
-        //for (auto di = 0; di < count_L; di++){
-        //    fp_device << *(tmp_ptr + di) << "\n";
-        //}
-    }
-    if (this->pcm_buffer_R->canSmartRead()){
-        count_R = pcm_buffer_R->getSmartRead(tmp_ptr, sample_count);
-        if (count_R != sample_count){
-            printf("MainComponent::getNextAudioBlock: not enough samples in tmp_ptr, need %d get %d\n", sample_count, count_R);
-        }
-        // DEBUG, write decoded floating points to a file and synthesis .wav with python.
-        memcpy(audio_buffer->getWritePointer(1, 0), tmp_ptr, sizeof(float) * count_R);
-    }
-    free (tmp_ptr);
-
-    return std::min(count_L, count_R);
-}
-*/
 
 enum mad_flow ThreadDecoder::input(void *data, struct mad_stream *stream){
     ThreadDecoder* thread_decoder = static_cast<ThreadDecoder*>(data);
@@ -81,7 +51,11 @@ enum mad_flow ThreadDecoder::input(void *data, struct mad_stream *stream){
     // With SmartRead()
     size_t target_read_length = thread_decoder->mp3_buffer->getSamplesPerFrame();
     juce::AudioBuffer<char> tmp_audioBuffer{1, static_cast<int>(target_read_length)};
-    size_t success_read_length = thread_decoder->mp3_buffer->lazySmartRead(&tmp_audioBuffer, 0, static_cast<int>(target_read_length), 0);
+    std::vector<char> tmptmp (target_read_length, '0');
+
+    size_t success_read_length = thread_decoder->mp3_buffer->read(&tmptmp, static_cast<int>(target_read_length));
+    memcpy(tmp_audioBuffer.getWritePointer(0,0), tmptmp.data(), sizeof(char) * success_read_length);
+    //memcpy(intermediate_buf.getWritePointer(0, 0), left.data(), sizeof(float) * success_sample_L);
     size_t length_l = stream->bufend - stream->next_frame;
 
     if (length_l+success_read_length != 0){
@@ -94,7 +68,8 @@ enum mad_flow ThreadDecoder::input(void *data, struct mad_stream *stream){
         //free(ptr); 
     }
     else{
-        printf ("Buggy in ThreadDecoder::input\n");
+        printf ("Buggy in ThreadDecoder::input return \n");
+        return MAD_FLOW_IGNORE;
     }
 
     return MAD_FLOW_CONTINUE;
@@ -151,11 +126,10 @@ enum mad_flow ThreadDecoder::output(void *data, struct mad_header const *header,
     }
 
     ThreadDecoder* thread_decoder = static_cast<ThreadDecoder*>(data);
-    size_t success_written_length_L = thread_decoder->pcm_buffer_L->lazySmartWrite(buf_L, buf_idx);
-    size_t success_written_length_R = thread_decoder->pcm_buffer_R->lazySmartWrite(buf_R, buf_idx);
+    size_t success_written_length_L = thread_decoder->pcm_buffer_L->write(buf_L, buf_idx);
+    size_t success_written_length_R = thread_decoder->pcm_buffer_R->write(buf_R, buf_idx);
     if (success_written_length_L == 0){
         success_written_length_R += 0;
-        printf ("Can't write to pcm_buffer_L: %zu/%zu\n", thread_decoder->pcm_buffer_L->getFrameCount(), thread_decoder->pcm_buffer_L->getMaxFrameCount());
     }
 
     free(buf);
@@ -206,8 +180,14 @@ void ThreadDecoder::encodeSumIntoBuffer(EncoderInputData* e_in, EncoderOutputDat
     juce::AudioBuffer<float> intermediate_buf{2, static_cast<int>(required_sample_count)};
     intermediate_buf.clear();
 
-    size_t success_sample_L = pcm_buffer_L->lazySmartRead(&intermediate_buf, 0, static_cast<int>(required_sample_count), 0);
-    size_t success_sample_R = pcm_buffer_R->lazySmartRead(&intermediate_buf, 0, static_cast<int>(required_sample_count), 1);
+    std::vector<float> left(required_sample_count);
+    std::vector<float> right(required_sample_count);
+
+    size_t success_sample_L = pcm_buffer_L->read(&left, static_cast<int>(required_sample_count));
+    size_t success_sample_R = pcm_buffer_R->read(&right, static_cast<int>(required_sample_count));
+
+    memcpy(intermediate_buf.getWritePointer(0, 0), left.data(), sizeof(float) * success_sample_L);
+    memcpy(intermediate_buf.getWritePointer(1, 0), right.data(), sizeof(float) * success_sample_R);
 
     // Add to the output buffer
     juce::AudioBuffer<float>* audio_buffer = e_out->audio_buffer;
