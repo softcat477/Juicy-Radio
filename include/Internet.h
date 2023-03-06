@@ -16,7 +16,9 @@ public:
     Internet& operator=(Internet&& other) = delete;
 
     void start() override;
-    size_t popAudio(std::vector<char>* output_buffer, size_t output_sample_count) override;
+    std::pair<size_t, size_t> popAudio(std::vector<char>* output_bufferL, 
+        std::vector<char>* output_bufferR,
+        size_t output_sample_count) override;
 
     static size_t write_callback(char *data, size_t size, size_t nmemb, void *userdata);
     size_t write_function(char *data, size_t size, size_t nmemb);

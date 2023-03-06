@@ -7,11 +7,13 @@
 #include "IOParams.h"
 #include "ChannelGui.h"
 
+#include "IChannel.h"
+
 #include <juce_audio_devices/juce_audio_devices.h>
 
 class ThreadChannel:public IThreadManager{
 public:
-    ThreadChannel(size_t buf_size, size_t buf_max_frame, IEncoderStream* mp3_decoder);
+    ThreadChannel(size_t buf_size, size_t buf_max_frame, IChannel<float>* mp3_decoder);
     ~ThreadChannel() override;
 
     ThreadChannel(ThreadChannel& other) = delete;

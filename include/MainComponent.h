@@ -4,13 +4,14 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 #include <thread>
-#include "../include/ThreadDecoder.h"
+//#include "../include/ThreadDecoder.h"
 #include "../include/ThreadChannel.h"
 #include "../include/RingBuffer.h"
 #include "../include/CondVar.h"
 #include "ChannelGui.h"
 
 #include "../include/Internet.h"
+#include "../include/Mp3Decoder.h"
 
 namespace AudioApp
 {
@@ -54,7 +55,8 @@ private:
     Internet _internet_manager;
     // In charge of decoding data in a ring buffer to waveform.
     // and store them into TWO ring buffers (left channel and right channel)
-    ThreadDecoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
+    // ThreadDecoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
+    Mp3Decoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
 
     ThreadChannel _channel_manager;
 

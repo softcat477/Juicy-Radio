@@ -30,12 +30,14 @@ void Internet::start() {
     }
 
     curl_easy_cleanup(curl);
-    buffer.signal();
+    bufferL.signal();
     printf ("Quit Internet::start().\n");
 }
-size_t Internet::popAudio(std::vector<char>* output_buffer, size_t output_sample_count) {
-    size_t ret_pop_length = buffer.read(output_buffer, output_sample_count);
-    return ret_pop_length;
+std::pair<size_t, size_t> Internet::popAudio(std::vector<char>* output_bufferL, 
+    std::vector<char>* output_bufferR,
+    size_t output_sample_count) {
+    size_t ret_pop_length = bufferL.read(output_bufferL, output_sample_count);
+    return std::make_pair(ret_pop_length, 0);
 }
 
 size_t Internet::write_callback(char *data, size_t size, size_t nmemb, void *userdata){
@@ -59,6 +61,6 @@ size_t Internet::write_function(char *data, size_t size, size_t nmemb){
 
     size_t realsize = size * nmemb;
 
-    size_t success_write_length = buffer.write(data, realsize);
+    size_t success_write_length = bufferL.write(data, realsize);
     return realsize;
 }

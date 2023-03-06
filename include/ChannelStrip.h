@@ -10,6 +10,8 @@
 #include "IEncoderStream.h"
 #include "ChannelGui.h"
 
+#include "IChannel.h"
+
 class ChannelStrip{
 public:
     ChannelStrip();
@@ -23,10 +25,12 @@ public:
     ChannelStrip& operator=(ChannelStrip&& other) = delete;
 
     bool connect(ChannelStrip*);
-    bool connect(IEncoderStream*);
+    //bool connect(IEncoderStream*);
+    bool connect(IChannel<float>*);
 
     bool remove(ChannelStrip*);
-    bool remove(IEncoderStream*);
+    //bool remove(IEncoderStream*);
+    bool remove(IChannel<float>*);
     /*
     void setPreDb(float pre_db);
     void setPostDb(float post_db);
@@ -43,6 +47,7 @@ private:
     ChannelStripSetting _channel_setting;
     ChannelGui _channel_gui;
     std::vector<ChannelStrip*> _input_strips;
-    std::vector<IEncoderStream*> _input_enc_streams;
+    // std::vector<IEncoderStream*> _input_enc_streams;
+    std::vector<IChannel<float>*> _input_enc_streams;
 };
 #endif

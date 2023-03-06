@@ -17,13 +17,13 @@ juce_add_gui_app(${TargetName} PRODUCT_NAME "BBC Radio3 Radio")
 target_sources(${TargetName} PRIVATE
         src/MainWindow.cpp
         src/MainComponent.cpp
-        src/ThreadDecoder.cpp
         src/CondVar.cpp
         src/IThreadManager.cpp
         src/ThreadChannel.cpp
         src/ChannelStrip.cpp
         src/ChannelGui.cpp
         src/Internet.cpp
+        src/Mp3Decoder.cpp
         main.cpp)
 target_compile_definitions(${TargetName} PRIVATE
         JUCE_WEB_BROWSER=0

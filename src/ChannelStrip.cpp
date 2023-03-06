@@ -21,7 +21,7 @@ bool ChannelStrip::connect(ChannelStrip* channel_strip){
     _input_strips.emplace_back(channel_strip);
     return true;
 }
-bool ChannelStrip::connect(IEncoderStream* encoder_stream){
+bool ChannelStrip::connect(IChannel<float>* encoder_stream){
     _input_enc_streams.emplace_back(encoder_stream);
     return true;
 }
@@ -30,7 +30,7 @@ bool ChannelStrip::remove(ChannelStrip* channel_strip){
     printf ("ChannelStrip::remove(ChannelStrip*) not implemented!\n");
     return false;
 }
-bool ChannelStrip::remove(IEncoderStream* encoder_stream){
+bool ChannelStrip::remove(IChannel<float>* encoder_stream){
     printf ("ChannelStrip::remove(IEncoderStream*) not implemented!\n");
     return false;
 }
@@ -70,11 +70,31 @@ void ChannelStrip::processAndMixAudio(juce::AudioBuffer<float>* out_buffer, int&
 
     EncoderInputData enc_input_data_dummy{required_samples};
     EncoderOutputData enc_output_data{out_buffer};
-    for (IEncoderStream* enc_stream : _input_enc_streams){
-        enc_stream->encodeSumIntoBuffer(&enc_input_data_dummy, &enc_output_data);
-        out_success_sample_L = enc_output_data.sample_count_L;
-        out_success_sample_R = enc_output_data.sample_count_R;
-    }
+
+    // === TODO: Unpack this line
+    //_input_enc_streams[0]->encodeSumIntoBuffer(&enc_input_data_dummy, &enc_output_data);
+    // === to these lines
+    size_t required_sample_count = enc_input_data_dummy.required_sample_count;
+    juce::AudioBuffer<float> intermediate_buf{2, static_cast<int>(required_sample_count)};
+    intermediate_buf.clear();
+
+    std::vector<float> left(required_sample_count);
+    std::vector<float> right(required_sample_count);
+
+    auto [success_sample_L, success_sample_R] = _input_enc_streams[0]->popAudio(&left, &right, required_sample_count);
+
+    memcpy(intermediate_buf.getWritePointer(0, 0), left.data(), sizeof(float) * success_sample_L);
+    memcpy(intermediate_buf.getWritePointer(1, 0), right.data(), sizeof(float) * success_sample_R);
+
+    // Add to the output buffer
+    juce::AudioBuffer<float>* audio_buffer = enc_output_data.audio_buffer;
+    audio_buffer->addFrom(0, 0, intermediate_buf, 0, 0, static_cast<int>(success_sample_L));
+    audio_buffer->addFrom(1, 0, intermediate_buf, 1, 0, static_cast<int>(success_sample_R));
+    enc_output_data.sample_count_L = success_sample_L;
+    enc_output_data.sample_count_R = success_sample_R;
+    // ===
+    out_success_sample_L = enc_output_data.sample_count_L;
+    out_success_sample_R = enc_output_data.sample_count_R;
 
     // 2. pre-gain
     //out_buffer->applyGain(0, static_cast<int>(required_samples), juce::Decibels::decibelsToGain(_channel_setting._pre_dB));

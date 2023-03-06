@@ -23,7 +23,7 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
 
     // Start two threads
     this->_thread_internet = std::thread(&Internet::start, &_internet_manager);
-    this->_thread_decoder = std::thread(&ThreadDecoder::start, &_decoder_manager);
+    this->_thread_decoder = std::thread(&Mp3Decoder::start, &_decoder_manager);
 
     setSize(640, 480);
 

@@ -4,7 +4,7 @@
 #include <juce_core/juce_core.h>
 #include <thread>
 
-ThreadChannel::ThreadChannel(size_t buf_size, size_t buf_max_frame, IEncoderStream* mp3_decoder):
+ThreadChannel::ThreadChannel(size_t buf_size, size_t buf_max_frame, IChannel<float>* mp3_decoder):
                 _buf_size(buf_size), _stereo_out(){
     _stereo_out.connect(mp3_decoder);
 }
