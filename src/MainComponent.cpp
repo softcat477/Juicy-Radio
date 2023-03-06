@@ -20,7 +20,7 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     this->_thread_internet = std::thread(&Internet::start, &_internet);
     this->_thread_decoder = std::thread(&Mp3Decoder::start, &_mp3_decoder);
 
-    setSize(640, 480);
+    setSize(120, 480);
 
     setAudioChannels(0, 2);
 
