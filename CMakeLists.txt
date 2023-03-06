@@ -18,8 +18,8 @@ target_sources(${TargetName} PRIVATE
         src/MainWindow.cpp
         src/MainComponent.cpp
         src/CondVar.cpp
-        src/IThreadManager.cpp
-        src/ThreadChannel.cpp
+        src/IThread.cpp
+        src/StereoOut.cpp
         src/ChannelGui.cpp
         src/Internet.cpp
         src/Mp3Decoder.cpp

@@ -1,6 +1,6 @@
 #ifndef ICHANNEL_H
 #define ICHANNEL_H
-#include "IThreadManager.h"
+#include "IThread.h"
 #include "RingBuffer.h"
 
 #include <vector>
@@ -9,7 +9,7 @@
 // target_read_length = thread_decoder->mp3_buffer->getSamplesPerFrame();
 
 template<typename DataType>
-class IChannel : public IThreadManager {
+class IChannel : public IThread {
 public:
     IChannel(size_t sample_per_frame, size_t max_frame_count) :
         bufferL{sample_per_frame, max_frame_count},

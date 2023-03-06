@@ -5,7 +5,7 @@
 
 #include <thread>
 //#include "../include/ThreadDecoder.h"
-#include "../include/ThreadChannel.h"
+#include "../include/StereoOut.h"
 #include "../include/RingBuffer.h"
 #include "../include/CondVar.h"
 #include "ChannelGui.h"
@@ -40,13 +40,13 @@ private:
     // Connect to a radio station and receive mp3 frames with LIBCURL.
     // Hold a RingBuffer to store chunks of data, and use _cond_mp3 to inform
     // the holder that there are new data in the ring buffer.
-    Internet _internet_manager;
+    Internet _internet;
     // In charge of decoding data in a ring buffer to waveform.
     // and store them into TWO ring buffers (left channel and right channel)
-    // ThreadDecoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
-    Mp3Decoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
+    // ThreadDecoder _mp3_decoder; // RingBuffer for pcm data, _cond_pcm
+    Mp3Decoder _mp3_decoder; // RingBuffer for pcm data, _cond_pcm
 
-    ThreadChannel _channel_manager;
+    StereoOut _stereo_out;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };

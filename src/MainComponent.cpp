@@ -12,17 +12,17 @@ namespace AudioApp
 MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): // 8192, 128
                         _sample_per_frame(sample_per_frame),
                         _max_frame_count(max_frame_count),
-                        _internet_manager{sample_per_frame, max_frame_count}, // 8192, 128
-                        _decoder_manager(1152, 512, &_internet_manager), // pass, 1152, 128
-                        _channel_manager(&_decoder_manager)
+                        _internet{sample_per_frame, max_frame_count}, // 8192, 128
+                        _mp3_decoder(1152, 512, &_internet), // pass, 1152, 128
+                        _stereo_out(&_mp3_decoder)
 {
     // stereo out
-    _stereo_out_gui = _channel_manager.getStereoOut();
+    _stereo_out_gui = _stereo_out.getStereoOut();
     addAndMakeVisible(*_stereo_out_gui);
 
     // Start two threads
-    this->_thread_internet = std::thread(&Internet::start, &_internet_manager);
-    this->_thread_decoder = std::thread(&Mp3Decoder::start, &_decoder_manager);
+    this->_thread_internet = std::thread(&Internet::start, &_internet);
+    this->_thread_decoder = std::thread(&Mp3Decoder::start, &_mp3_decoder);
 
     setSize(640, 480);
 
@@ -35,8 +35,8 @@ MainComponent::~MainComponent()
     shutdownAudio();
 }
 void MainComponent::shutdown(){
-    _internet_manager.setStop();
-    _decoder_manager.setStop();
+    _internet.setStop();
+    _mp3_decoder.setStop();
     this->_thread_internet.join();
     this->_thread_decoder.join();
 }
@@ -64,7 +64,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     // Copy to buffer
     int success_sample_L = 0;
     int success_sample_R = 0;
-    _channel_manager.getNextAudioBlock(bufferToFill.buffer, bufferToFill.numSamples, success_sample_L, success_sample_R);
+    _stereo_out.getNextAudioBlock(bufferToFill.buffer, bufferToFill.numSamples, success_sample_L, success_sample_R);
 }
 void MainComponent::releaseResources()
 {

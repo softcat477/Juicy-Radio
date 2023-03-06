@@ -1,18 +1,18 @@
-#include "../include/ThreadChannel.h"
+#include "../include/StereoOut.h"
 #include "../include/IOParams.h"
 
 #include <juce_core/juce_core.h>
 #include <thread>
 
-ThreadChannel::ThreadChannel(IChannel<float>* mp3_decoder):
+StereoOut::StereoOut(IChannel<float>* mp3_decoder):
                 _channel_setting(0.0, 0.0, 0.0, 44100.0, 300),
                 _channel_gui(&_channel_setting){ 
     _input_enc_streams.emplace_back(mp3_decoder);
 }
-ThreadChannel::~ThreadChannel(){
+StereoOut::~StereoOut(){
 }
 /*
-void ThreadChannel::start(){
+void StereoOut::start(){
     while (true){
         if (this->_isStopped.load() == true){
             break;
@@ -54,7 +54,7 @@ void ThreadChannel::start(){
                 buffer[sample] = random.nextFloat() * 1.0f - 0.5f;
         }
     }
-    printf ("Quit ThreadChannel::start()\n");
+    printf ("Quit StereoOut::start()\n");
 }
 */
 
@@ -65,7 +65,7 @@ void ThreadChannel::start(){
 4. Pan
 5. Post-gain
 */
-void ThreadChannel::getNextAudioBlock(juce::AudioBuffer<float>* out_buffer, int num_samples, int& success_sample_L, int& success_sample_R){
+void StereoOut::getNextAudioBlock(juce::AudioBuffer<float>* out_buffer, int num_samples, int& success_sample_L, int& success_sample_R){
     // Read from Upstream
     const size_t required_samples = static_cast<size_t>(num_samples);
     std::vector<float> left(required_samples);

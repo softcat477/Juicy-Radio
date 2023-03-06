@@ -8,7 +8,7 @@
 
 #include "RingBuffer.h"
 #include "CondVar.h"
-#include "IThreadManager.h"
+#include "IThread.h"
 #include "IOParams.h"
 
 #include "IChannel.h"

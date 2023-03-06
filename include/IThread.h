@@ -1,12 +1,12 @@
-#ifndef ITHREADMANAGER_H
-#define ITHREADMANAGER_H
+#ifndef ITHREAD_H
+#define ITHREAD_H
 
 #include <atomic>
 
-class IThreadManager{
+class IThread{
 public:
-    IThreadManager();
-    virtual ~IThreadManager();
+    IThread();
+    virtual ~IThread();
     virtual void start() = 0;
 
     void setStop();
