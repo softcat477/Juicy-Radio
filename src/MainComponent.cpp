@@ -10,12 +10,11 @@
 namespace AudioApp
 {
 MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): // 8192, 128
-                        _output_gain(0.0),
                         _sample_per_frame(sample_per_frame),
                         _max_frame_count(max_frame_count),
                         _internet_manager{sample_per_frame, max_frame_count}, // 8192, 128
                         _decoder_manager(1152, 512, &_internet_manager), // pass, 1152, 128
-                        _channel_manager(512, 1152, &_decoder_manager)
+                        _channel_manager(&_decoder_manager)
 {
     // stereo out
     _stereo_out_gui = _channel_manager.getStereoOut();
@@ -57,34 +56,18 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 }
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
+    // Clear buffer
     bufferToFill.clearActiveBufferRegion();
     int startSample = bufferToFill.startSample;
     int numSamples = bufferToFill.numSamples;
 
-    juce::AudioBuffer<float> tmp_audiobuffer{2, numSamples};
-    tmp_audiobuffer.clear();
+    // Copy to buffer
     int success_sample_L = 0;
     int success_sample_R = 0;
-    _channel_manager.getNextAudioBlock(&tmp_audiobuffer, numSamples, success_sample_L, success_sample_R);
-
-    bufferToFill.buffer->copyFrom(0, startSample, tmp_audiobuffer, 0, 0, success_sample_L);
-    bufferToFill.buffer->copyFrom(1, startSample, tmp_audiobuffer, 1, 0, success_sample_R);
+    _channel_manager.getNextAudioBlock(bufferToFill.buffer, bufferToFill.numSamples, success_sample_L, success_sample_R);
 }
 void MainComponent::releaseResources()
 {
     printf ("Release resources\n");
-}
-void MainComponent::sliderValueChanged(juce::Slider* slider){
-    double new_db = slider->getValue();
-    _output_gain = juce::Decibels::decibelsToGain(new_db);
-}
-
-void MainComponent::_openButtonClicked()
-{
-    printf("Open Button\n");
-}
-void MainComponent::_clearButtonClicked()
-{
-    printf("Clear Button\n");
 }
 } // namespace GuiApp

@@ -13,7 +13,7 @@
 
 class ThreadChannel:public IThreadManager{
 public:
-    ThreadChannel(size_t buf_size, size_t buf_max_frame, IChannel<float>* mp3_decoder);
+    ThreadChannel(IChannel<float>* mp3_decoder);
     ~ThreadChannel() override;
 
     ThreadChannel(ThreadChannel& other) = delete;
@@ -22,16 +22,13 @@ public:
     ThreadChannel& operator=(ThreadChannel&& other) = delete;
 
     void start() override;
-    ChannelGui* getStereoOut(){return _stereo_out.getChanelGui();}
+    ChannelGui* getStereoOut(){return &_channel_gui;}
 
     void getNextAudioBlock(juce::AudioBuffer<float>* out_buffer, int num_samples, int& success_sample_L, int& success_sample_R);
-
-    //RingBuffer<float>* stereo_out_L;
-    //RingBuffer<float>* stereo_out_R;
 private:
-    size_t _buf_size;
-    ChannelStrip _stereo_out;
-    std::vector<ChannelStrip> _channels;
+    std::vector<IChannel<float>*> _input_enc_streams;
+    ChannelStripSetting _channel_setting;
+    ChannelGui _channel_gui;
 };
 
 #endif

@@ -15,7 +15,7 @@
 
 namespace AudioApp
 {
-class MainComponent : public juce::AudioAppComponent, public juce::Slider::Listener{
+class MainComponent : public juce::AudioAppComponent {
 public:
     MainComponent(size_t sample_per_frame, size_t max_frame_count);
     ~MainComponent() override;
@@ -28,26 +28,14 @@ public:
     void resized() override;
 
     void shutdown();
-
-    void sliderValueChanged(juce::Slider* slider) override;
-
 private:
-    void _openButtonClicked();
-    void _clearButtonClicked();
-
-    juce::TextButton _open_button;
-    juce::TextButton _clear_button;
-    juce::Slider _db_slider;
     ChannelGui* _stereo_out_gui;
-
-    double _output_gain;
 
     size_t _sample_per_frame;
     size_t _max_frame_count;
 
     std::thread _thread_internet;
     std::thread _thread_decoder;
-    std::thread _thread_channel;
 
     // Connect to a radio station and receive mp3 frames with LIBCURL.
     // Hold a RingBuffer to store chunks of data, and use _cond_mp3 to inform
@@ -59,13 +47,6 @@ private:
     Mp3Decoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
 
     ThreadChannel _channel_manager;
-
-
-    // Read from these two RingBuffer pointer and send to the audio device.
-    // Point to the ring buffer holded by ThreadDecoder
-    RingBuffer<float>* _buffer_pcm_L;
-    // Point to the ring buffer holded by ThreadDecoder
-    RingBuffer<float>* _buffer_pcm_R;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
