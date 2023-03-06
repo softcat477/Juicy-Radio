@@ -1,11 +1,7 @@
+#include <cstdio>
+//#include <juce_audio_basics/juce_audio_basics.h>
+
 #include "../include/MainComponent.h"
-#include "../include/RingBuffer.h"
-#include "../include/IOParams.h"
-
-#include <stdio.h>
-#include <fstream>
-
-#include <juce_audio_basics/juce_audio_basics.h>
 
 namespace AudioApp
 {

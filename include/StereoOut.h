@@ -1,9 +1,6 @@
 #ifndef STEREOOUT_H
 #define STEREOOUT_H
 
-//#include "IThread.h"
-// #include "RingBuffer.h"
-// #include "ChannelStrip.h"
 #include "IOParams.h"
 #include "ChannelGui.h"
 

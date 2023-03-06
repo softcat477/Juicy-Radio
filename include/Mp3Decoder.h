@@ -1,16 +1,10 @@
 #ifndef MP3DECODER_H
 #define MP3DECODER_H
 
-#include <stdio.h>
-#include <thread>
-#include <atomic>
+#include <cstdio>
 #include <mad.h>
 
-#include "RingBuffer.h"
-#include "CondVar.h"
-#include "IThread.h"
-#include "IOParams.h"
-
+//#include "IThread.h"
 #include "IChannel.h"
 
 class Mp3Decoder: public IChannel<float>{

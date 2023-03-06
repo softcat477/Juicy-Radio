@@ -1,9 +1,6 @@
 #include "../include/StereoOut.h"
 #include "../include/IOParams.h"
 
-#include <juce_core/juce_core.h>
-#include <thread>
-
 StereoOut::StereoOut(IChannel<float>* mp3_decoder):
                 _channel_setting(0.0, 0.0, 0.0, 44100.0, 300),
                 _channel_gui(&_channel_setting){ 

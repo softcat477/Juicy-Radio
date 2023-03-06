@@ -1,17 +1,7 @@
 #include "../include/Mp3Decoder.h"
 
-#include <algorithm>
-
-#include <mad.h>
-#include <mutex>
-#include <utility>
-#include <condition_variable>
-#include "../include/RingBuffer.h"
-#include "../include/CondVar.h"
-
-#include <fstream>
-#include <iostream>
 #include <vector>
+#include <utility>
 
 Mp3Decoder::Mp3Decoder(size_t sample_per_frame, size_t pcm_buf_size, IChannel<char>* upstream): // 1152, 128
                 IChannel{sample_per_frame, pcm_buf_size},
@@ -45,17 +35,18 @@ enum mad_flow Mp3Decoder::input(void *data, struct mad_stream *stream){
 
     // With SmartRead()
     size_t target_read_length = thread_decoder->upstream->getSamplesPerFrame();
-    juce::AudioBuffer<char> tmp_audioBuffer{1, static_cast<int>(target_read_length)};
+    //juce::AudioBuffer<char> tmp_audioBuffer{1, static_cast<int>(target_read_length)};
     std::vector<char> tmptmp (target_read_length, '0');
 
     auto [success_read_length, _tmp] = thread_decoder->upstream->popAudio(&tmptmp, &tmptmp, static_cast<int>(target_read_length));
-    memcpy(tmp_audioBuffer.getWritePointer(0,0), tmptmp.data(), sizeof(char) * success_read_length);
+    //memcpy(tmp_audioBuffer.getWritePointer(0,0), tmptmp.data(), sizeof(char) * success_read_length);
     size_t length_l = stream->bufend - stream->next_frame;
 
     if (length_l+success_read_length != 0){
         unsigned char* ptr = (unsigned char*)malloc(length_l + success_read_length);
         memcpy(ptr, stream->next_frame, length_l);
-        memcpy(ptr+length_l, tmp_audioBuffer.getReadPointer(0), success_read_length);
+        //memcpy(ptr+length_l, tmp_audioBuffer.getReadPointer(0), success_read_length);
+        memcpy(ptr+length_l, tmptmp.data(), success_read_length);
 
         mad_stream_buffer(stream, ptr, (unsigned long)(length_l + success_read_length)); // The address to the location storing the binary data.
     }
@@ -74,9 +65,8 @@ enum mad_flow Mp3Decoder::output(void *data, struct mad_header const *header, st
     left_ch   = pcm->samples[0];
     right_ch  = pcm->samples[1];
 
-    unsigned char* buf;
+    // unsigned char* buf;
     unsigned int buf_size = nchannels * 2 * nsamples;
-    buf = static_cast<unsigned char*>(malloc(buf_size));
 
     float* buf_L;
     buf_L = static_cast<float*>(malloc(buf_size));
@@ -90,10 +80,6 @@ enum mad_flow Mp3Decoder::output(void *data, struct mad_header const *header, st
         signed int sample = pcmInt_pcmFloat.first;
         float pcm_float = pcmInt_pcmFloat.second;
 
-        // DEBUG, Write to PCM
-        *(buf+buf_idx*4 + 0) = (sample >> 0) & 0xff;
-        *(buf+buf_idx*4 + 1) = (sample >> 8) & 0xff;
-
         *(buf_L+buf_idx) = pcm_float;
 
         if (nchannels == 2) {
@@ -101,11 +87,6 @@ enum mad_flow Mp3Decoder::output(void *data, struct mad_header const *header, st
             pcmInt_pcmFloat = Mp3Decoder::scale(*right_ch++);
             sample = pcmInt_pcmFloat.first;
             pcm_float = pcmInt_pcmFloat.second;
-
-            // Write to file
-            // DEBUG, Write to PCM
-            *(buf+buf_idx*4 + 2) = (sample >> 0) & 0xff;
-            *(buf+buf_idx*4 + 3) = (sample >> 8) & 0xff;
 
             *(buf_R+buf_idx) = pcm_float;
         }
@@ -115,11 +96,7 @@ enum mad_flow Mp3Decoder::output(void *data, struct mad_header const *header, st
     Mp3Decoder* thread_decoder = static_cast<Mp3Decoder*>(data);
     size_t success_written_length_L = (thread_decoder->bufferL).write(buf_L, buf_idx);
     size_t success_written_length_R = (thread_decoder->bufferR).write(buf_R, buf_idx);
-    if (success_written_length_L == 0){
-        success_written_length_R += 0;
-    }
 
-    free(buf);
     free(buf_L);
     free(buf_R);
     return MAD_FLOW_CONTINUE;

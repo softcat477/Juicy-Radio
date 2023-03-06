@@ -1,17 +1,14 @@
 #ifndef MAINCOMPONENT_H
 #define MAINCOMPONENT_H
 
+#include <thread>
+
 #include <juce_audio_utils/juce_audio_utils.h>
 
-#include <thread>
-//#include "../include/ThreadDecoder.h"
-#include "../include/StereoOut.h"
-#include "../include/RingBuffer.h"
-#include "../include/CondVar.h"
+#include "StereoOut.h"
+#include "Internet.h"
+#include "Mp3Decoder.h"
 #include "ChannelGui.h"
-
-#include "../include/Internet.h"
-#include "../include/Mp3Decoder.h"
 
 namespace AudioApp
 {

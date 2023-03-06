@@ -1,5 +1,4 @@
 #include "../include/ChannelGui.h"
-#include "math.h"
 #include <cmath>
 #include <valarray>
 #include <juce_core/juce_core.h>
