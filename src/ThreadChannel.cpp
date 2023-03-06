@@ -11,9 +11,6 @@ ThreadChannel::ThreadChannel(IChannel<float>* mp3_decoder):
 }
 ThreadChannel::~ThreadChannel(){
 }
-void ThreadChannel::start(){
-    printf ("ThreadChannel::start() is not implemented yet :<");
-}
 /*
 void ThreadChannel::start(){
     while (true){

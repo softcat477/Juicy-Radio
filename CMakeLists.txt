@@ -20,7 +20,6 @@ target_sources(${TargetName} PRIVATE
         src/CondVar.cpp
         src/IThreadManager.cpp
         src/ThreadChannel.cpp
-        src/ChannelStrip.cpp
         src/ChannelGui.cpp
         src/Internet.cpp
         src/Mp3Decoder.cpp

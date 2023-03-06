@@ -1,9 +1,9 @@
 #ifndef THREADCHANNEL_H
 #define THREADCHANNEL_H
 
-#include "IThreadManager.h"
-#include "RingBuffer.h"
-#include "ChannelStrip.h"
+//#include "IThreadManager.h"
+// #include "RingBuffer.h"
+// #include "ChannelStrip.h"
 #include "IOParams.h"
 #include "ChannelGui.h"
 
@@ -11,17 +11,16 @@
 
 #include <juce_audio_devices/juce_audio_devices.h>
 
-class ThreadChannel:public IThreadManager{
+class ThreadChannel {
 public:
     ThreadChannel(IChannel<float>* mp3_decoder);
-    ~ThreadChannel() override;
+    ~ThreadChannel();
 
     ThreadChannel(ThreadChannel& other) = delete;
     ThreadChannel& operator=(ThreadChannel& other) = delete;
     ThreadChannel(ThreadChannel&& other) = delete;
     ThreadChannel& operator=(ThreadChannel&& other) = delete;
 
-    void start() override;
     ChannelGui* getStereoOut(){return &_channel_gui;}
 
     void getNextAudioBlock(juce::AudioBuffer<float>* out_buffer, int num_samples, int& success_sample_L, int& success_sample_R);
