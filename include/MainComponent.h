@@ -4,12 +4,13 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 #include <thread>
-#include "../include/ThreadInternet.h"
 #include "../include/ThreadDecoder.h"
 #include "../include/ThreadChannel.h"
 #include "../include/RingBuffer.h"
 #include "../include/CondVar.h"
 #include "ChannelGui.h"
+
+#include "../include/Internet.h"
 
 namespace AudioApp
 {
@@ -50,9 +51,8 @@ private:
     // Connect to a radio station and receive mp3 frames with LIBCURL.
     // Hold a RingBuffer to store chunks of data, and use _cond_mp3 to inform
     // the holder that there are new data in the ring buffer.
-    ThreadInternet _internet_manager;
+    Internet _internet_manager;
     // In charge of decoding data in a ring buffer to waveform.
-    // Connect to ThreadInternet::RingBuffer and decode mp3 frames into floating points
     // and store them into TWO ring buffers (left channel and right channel)
     ThreadDecoder _decoder_manager; // RingBuffer for pcm data, _cond_pcm
 

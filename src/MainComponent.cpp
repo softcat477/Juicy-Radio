@@ -1,6 +1,5 @@
 #include "../include/MainComponent.h"
 #include "../include/RingBuffer.h"
-#include "../include/ThreadInternet.h"
 #include "../include/IOParams.h"
 
 #include <stdio.h>
@@ -14,8 +13,8 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
                         _output_gain(0.0),
                         _sample_per_frame(sample_per_frame),
                         _max_frame_count(max_frame_count),
-                        _internet_manager(sample_per_frame, max_frame_count), // 8192, 128
-                        _decoder_manager(_internet_manager.ring_buffer, 1152, 512), // pass, 1152, 128
+                        _internet_manager{sample_per_frame, max_frame_count}, // 8192, 128
+                        _decoder_manager(1152, 512, &_internet_manager), // pass, 1152, 128
                         _channel_manager(512, 1152, &_decoder_manager)
 {
     // stereo out
@@ -23,7 +22,7 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     addAndMakeVisible(*_stereo_out_gui);
 
     // Start two threads
-    this->_thread_internet = std::thread(&ThreadInternet::start, &_internet_manager);
+    this->_thread_internet = std::thread(&Internet::start, &_internet_manager);
     this->_thread_decoder = std::thread(&ThreadDecoder::start, &_decoder_manager);
 
     setSize(640, 480);

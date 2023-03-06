@@ -13,11 +13,10 @@
 #include <iostream>
 #include <vector>
 
-ThreadDecoder::ThreadDecoder(RingBuffer<char>* ref_mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size): // 1152, 128
-                mp3_buffer(ref_mp3_buffer){
+ThreadDecoder::ThreadDecoder(size_t sample_per_frame, size_t pcm_buf_size, IChannel<char>* upstream): // 1152, 128
+                upstream{upstream}{
     /*
      * Input:
-     *  <mp3_buffer>: Read mp3 frames from this buffer and decode frames into floating points.
      *  <sample_per_frame>: The number of samples in ring buffers for LR channels.
      *  <pcm_buf_size>: The number of frames in the ring buffer for LR channels.
     */
@@ -38,9 +37,8 @@ enum mad_flow ThreadDecoder::input(void *data, struct mad_stream *stream){
     }
 
     // Wait until there's mp3 frames.
-    if (thread_decoder->mp3_buffer->canRead() == false){
-        //thread_decoder->_cond_mp3->wait();
-        thread_decoder->mp3_buffer->wait();
+    if (thread_decoder->upstream->canRead() == false){
+        thread_decoder->upstream->wait();
     }
 
     // Terminate by user
@@ -49,13 +47,12 @@ enum mad_flow ThreadDecoder::input(void *data, struct mad_stream *stream){
     }
 
     // With SmartRead()
-    size_t target_read_length = thread_decoder->mp3_buffer->getSamplesPerFrame();
+    size_t target_read_length = thread_decoder->upstream->getSamplesPerFrame();
     juce::AudioBuffer<char> tmp_audioBuffer{1, static_cast<int>(target_read_length)};
     std::vector<char> tmptmp (target_read_length, '0');
 
-    size_t success_read_length = thread_decoder->mp3_buffer->read(&tmptmp, static_cast<int>(target_read_length));
+    size_t success_read_length = thread_decoder->upstream->popAudio(&tmptmp, static_cast<int>(target_read_length));
     memcpy(tmp_audioBuffer.getWritePointer(0,0), tmptmp.data(), sizeof(char) * success_read_length);
-    //memcpy(intermediate_buf.getWritePointer(0, 0), left.data(), sizeof(float) * success_sample_L);
     size_t length_l = stream->bufend - stream->next_frame;
 
     if (length_l+success_read_length != 0){

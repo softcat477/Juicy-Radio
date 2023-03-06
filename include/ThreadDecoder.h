@@ -12,11 +12,13 @@
 #include "IThreadManager.h"
 #include "IOParams.h"
 
+#include "IChannel.h"
+
 //class ThreadDecoder : public IEncoderStream{
 class ThreadDecoder:public IThreadManager, public IEncoderStream{
 public:
     ThreadDecoder() = delete;
-    ThreadDecoder(RingBuffer<char>* mp3_buffer, size_t sample_per_frame, size_t pcm_buf_size);
+    ThreadDecoder(size_t sample_per_frame, size_t pcm_buf_size, IChannel<char>* upstream);
     ~ThreadDecoder() override;
 
     ThreadDecoder(ThreadDecoder& other) = delete;
@@ -33,11 +35,11 @@ public:
     static enum mad_flow error(void *data, struct mad_stream *stream, struct mad_frame *frame);
     static std::pair<signed int, float> scale(mad_fixed_t sample);
 
-    // Read mp3 frames from here
-    RingBuffer<char>*   mp3_buffer;
     // Store decoded floating points to here.
     RingBuffer<float>* pcm_buffer_L;
     RingBuffer<float>* pcm_buffer_R;
+
+    IChannel<char>* upstream;
 };
 
 #endif
