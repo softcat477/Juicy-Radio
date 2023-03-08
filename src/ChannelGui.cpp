@@ -139,7 +139,8 @@ void AudioMeasure::resized() {
 }
 
 ChannelGui::ChannelGui(ChannelStripSetting* in_strip_setting):strip_setting(in_strip_setting), 
-                    meter_gui(in_strip_setting->sample_rate, in_strip_setting->rms_window_ms){
+                    meter_gui(in_strip_setting->sample_rate, in_strip_setting->rms_window_ms),
+                    fader_lookAndFeel{}{
     LR = int((channel_width-2*margin-margin_mini)/2);
     pan_gui.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalDrag);
     //pan_gui.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox);
@@ -170,6 +171,7 @@ ChannelGui::ChannelGui(ChannelStripSetting* in_strip_setting):strip_setting(in_s
     fader_gui.setTextValueSuffix ("");
     fader_gui.setNumDecimalPlacesToDisplay(1);
     fader_gui.onValueChange = [this]{_faderCallback();};
+    fader_gui.setLookAndFeel (&fader_lookAndFeel);
     addAndMakeVisible(fader_gui);
 
     addAndMakeVisible(meter_gui);
@@ -214,4 +216,10 @@ void ChannelGui::_faderCallback(){
 }
 void ChannelGui::updateAudioMeter(const juce::AudioBuffer<float>* out_buffer, int out_success_sample_L, int out_success_sample_R){
     meter_gui.audioBuffer2Rms(out_buffer, out_success_sample_L, out_success_sample_R);
+}
+
+FaderLookAndFeel::FaderLookAndFeel() {
+}
+int FaderLookAndFeel::getSliderThumbRadius(juce::Slider& slider) {
+    return 15;
 }

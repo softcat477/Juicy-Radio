@@ -67,6 +67,12 @@ private:
     float _dist;
 };
 
+class FaderLookAndFeel: public juce::LookAndFeel_V4 {
+public:
+    FaderLookAndFeel();
+    int getSliderThumbRadius(juce::Slider& slider) override;	
+};
+
 class ChannelGui: public juce::Component{
 public:
     ChannelGui() = delete;
@@ -105,6 +111,9 @@ private:
     juce::Colour _c_channel_bg = juce::Colour{72, 72, 72};
     juce::Colour _c_channel_shadow = juce::Colour{33, 131, 128};
     juce::Colour _c_interior_fill = juce::Colour{50, 50, 50};
+
+    FaderLookAndFeel fader_lookAndFeel;
 };
+
 
 #endif
