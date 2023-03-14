@@ -9,10 +9,30 @@ public:
     CondVar();
     ~CondVar();
 
-    CondVar(CondVar& other) = delete;
-    CondVar& operator=(CondVar& other) = delete;
-    CondVar(CondVar&& other) = delete;
-    CondVar& operator=(CondVar&& other) = delete;
+    // CondVar(CondVar& other) = delete;
+    // CondVar& operator=(CondVar& other) = delete;
+    // CondVar(CondVar&& other) = delete;
+    // CondVar& operator=(CondVar&& other) = delete;
+
+
+    CondVar(CondVar& other) :
+        condvar{},
+        m{}
+    {
+
+    }
+    CondVar& operator=(CondVar& other) {
+        return *this;
+    }
+    CondVar(CondVar&& other) :
+        condvar{},
+        m{}
+    {
+
+    }
+    CondVar& operator=(CondVar&& other) {
+        return *this;
+    }
 
     void wait();
     void signal();
