@@ -22,8 +22,11 @@ public:
     size_t pushAudio(const DType* input_buffer, size_t input_samples, size_t channel_index = 0) {
         addPending();
         size_t sus_max = 0;
-        for (InJackPtr<DType, channels> output : _outputs) {
-            size_t sus = output->pushAudio(input_buffer, input_samples, channel_index);
+        for (InJackWeakPtr<DType, channels> output : _outputs) {
+            InJackPtr<DType, channels> ptr = output.lock();
+            if (!ptr)
+                continue;
+            size_t sus = ptr->pushAudio(input_buffer, input_samples, channel_index);
             sus_max = std::max(sus, sus_max);
         }
         return sus_max;
@@ -32,8 +35,11 @@ public:
     std::vector<size_t> pushAudio(const std::vector<DType*>* input_buffers, size_t input_samples) {
         addPending();
         std::vector<size_t> sus_max (_channels, 0);
-        for (InJackPtr<DType, channels> output : _outputs) {
-            std::vector<size_t> sus = output->pushAudio(input_buffers, input_samples);
+        for (InJackWeakPtr<DType, channels> output : _outputs) {
+            InJackPtr<DType, channels> ptr = output.lock();
+            if (!ptr)
+                continue;
+            std::vector<size_t> sus = ptr->pushAudio(input_buffers, input_samples);
             std::transform(sus_max.begin(), sus_max.end(), sus.begin(), sus_max.begin(), 
                 [](const size_t& a , const size_t& b){return std::max(a, b);});
         }
@@ -57,20 +63,23 @@ public:
 
     bool canRead() {
         bool ret = false;
-        for (InJackPtr<DType, channels> output : _outputs) {
-            ret = ret | output->canRead();
+        for (InJackWeakPtr<DType, channels> output : _outputs) {
+            InJackPtr<DType, channels> ptr = output.lock();
+            if (!ptr)
+                continue;
+            ret = ret | ptr->canRead();
         }
         return ret;
     }
 private:
     void addPending() {
-        for (InJackPtr<DType, channels> pending_output : _pending_outputs) {
+        for (InJackWeakPtr<DType, channels> pending_output : _pending_outputs) {
             _outputs.push_back(pending_output);
         }
         _pending_outputs.clear();
     }
-    std::vector<InJackPtr<DType, channels>> _outputs;
-    std::vector<InJackPtr<DType, channels>> _pending_outputs;
+    std::vector<InJackWeakPtr<DType, channels>> _outputs;
+    std::vector<InJackWeakPtr<DType, channels>> _pending_outputs;
     size_t _channels;
 
     std::shared_ptr<CondVar> _cond_var;

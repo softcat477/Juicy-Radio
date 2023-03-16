@@ -160,6 +160,8 @@ private:
 
 template <typename DType, size_t channels>
 using OutJackPtr = std::shared_ptr<OutJack<DType, channels>>;
+template <typename DType, size_t channels>
+using OutJackWeakPtr = std::weak_ptr<OutJack<DType, channels>>;
 
 
 /*
@@ -244,6 +246,8 @@ private:
 
 template <typename DType, size_t channels>
 using InJackPtr = std::shared_ptr<InJack<DType, channels>>;
+template <typename DType, size_t channels>
+using InJackWeakPtr = std::weak_ptr<InJack<DType, channels>>;
 
 /*
 A wire owns an InJack and OutJack. Aggregators and distributors talk to In/Out jack
