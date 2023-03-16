@@ -32,20 +32,8 @@ public:
                                                             _read_idx{0},
                                                             _write_idx{0},
                                                             _capacity{sample_per_frame*max_frame_count}{
-        //_cond_var = new CondVar();
     }
     ~RingBuffer(){
-        //if (_cond_var != nullptr)
-        //    _cond_var->signal();
-        //delete _cond_var;
-        std::shared_ptr<CondVar> ptr = _cond_var.lock();
-        if (ptr)
-            ptr->signal();
-        _cond_var.reset();
-    }
-
-    void addCondVar(std::shared_ptr<CondVar> var) {
-        _cond_var = var;
     }
 
     RingBuffer(const RingBuffer& other) :
@@ -54,8 +42,7 @@ public:
         _max_frame_count{other._max_frame_count},
         _read_idx{other._read_idx.load()},
         _write_idx{other._write_idx.load()},
-        _capacity{other._capacity},
-        _cond_var{other._cond_var}
+        _capacity{other._capacity}
     {
 
     }
@@ -69,7 +56,6 @@ public:
         _read_idx = other._read_idx.load();
         _write_idx = other._write_idx.load();
         _capacity = other._capacity;
-        _cond_var = other._cond_var;
 
         return *this;
     }
@@ -79,23 +65,18 @@ public:
         _max_frame_count{std::move(other._max_frame_count)},
         _read_idx{std::move(other._read_idx.load())},
         _write_idx{std::move(other._write_idx.load())},
-        _capacity{std::move(other._capacity)},
-        _cond_var{other._cond_var} {
+        _capacity{std::move(other._capacity)}{
 
         other.isActive = false;
-        other.signal();
-        //other._buffer.erase();
         other._samples_per_frame = 0;
         other._max_frame_count = 0;
         other._read_idx.store(0);
         other._write_idx.store(0);
         other._capacity = 0;
-        other._cond_var.reset();
     }
     RingBuffer& operator=(RingBuffer&& other) {
         if (&other == this)
             return *this;
-        _cond_var = other._cond_var;
     }
 
     /*
@@ -129,16 +110,6 @@ public:
 
         // update write_index_
         _write_idx.store((write_index + ret_write_sample_length) % _capacity);
-
-        // ThreadDecoder is waiting for the next frame, we have send a signal to let it know there's a new frame.
-        if (ret_write_sample_length > 0) {
-            if (canRead()) {
-                std::shared_ptr<CondVar> ptr = _cond_var.lock();
-                if (ptr) {
-                    ptr->signal();
-                }
-            }
-        }
 
         return ret_write_sample_length;
     }
@@ -197,22 +168,6 @@ public:
     }
     size_t getMaxFrameCount(){
         return _max_frame_count;
-    }
-
-    // Need these two functions to let ThreadDecoder know there's at least one frame in the buffer.
-    void signal(){
-        std::shared_ptr<CondVar> ptr = _cond_var.lock();
-        if (ptr) {
-            //if (_cond_var != nullptr)
-            ptr->signal();
-        }
-    }
-    void wait(){
-        std::shared_ptr<CondVar> ptr = _cond_var.lock();
-        if (ptr) {
-            //if (_cond_var != nullptr)
-            ptr->wait();
-        }
     }
 
     /*
@@ -290,9 +245,6 @@ private:
     std::atomic<size_t> _read_idx;
     std::atomic<size_t> _write_idx;
     size_t _capacity;
-
-    // A condition variable pointer to inform its holder (downstream units' aggregator) that new data is available.
-    std::weak_ptr<CondVar> _cond_var;
 
     bool isActive = true;
 };

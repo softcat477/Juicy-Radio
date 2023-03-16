@@ -59,5 +59,9 @@ size_t RadioReceiver::write_function(char *data, size_t size, size_t nmemb){
 
     size_t ret_size = _distributor.pushAudio(data, realsize, 0);
     _distributor.pushAudio(data, realsize, 1);
+
+    if (_distributor.canRead()){
+        _distributor.signal();
+    }
     return ret_size;
 }

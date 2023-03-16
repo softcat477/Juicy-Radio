@@ -23,10 +23,6 @@ public:
 
     void connect(WirePtr<DType, channels> input_wire) {
         _pending_inputs.push_back(input_wire->getOutPtr());
-        std::shared_ptr<CondVar> ptr = _cond_var.lock();
-        if (ptr) {
-            _pending_inputs.back()->addCondVar(ptr);
-        }
     }
 
     size_t popAudio(DType* output_buffer, size_t output_samples, size_t channel_index = 0) {

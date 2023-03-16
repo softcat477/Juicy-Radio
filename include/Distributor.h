@@ -17,11 +17,8 @@ public:
 
     void connect(WirePtr<DType, channels> output_wire) {
         _pending_outputs.push_back(output_wire->getInPtr());
-        // Attach the conditional variable
-        _pending_outputs.back()->addCondVar(_cond_var);
     }
 
-    //size_t popAudio(DType* output_buffer, size_t output_samples, size_t channel_index = 0) {
     size_t pushAudio(const DType* input_buffer, size_t input_samples, size_t channel_index = 0) {
         addPending();
         size_t sus_max = 0;
@@ -32,7 +29,6 @@ public:
         return sus_max;
     }
 
-    //std::vector<size_t> popAudio(std::vector<DType*>* output_buffers, size_t output_samples) {
     std::vector<size_t> pushAudio(const std::vector<DType*>* input_buffers, size_t input_samples) {
         addPending();
         std::vector<size_t> sus_max (_channels, 0);
@@ -57,6 +53,14 @@ public:
 
     std::shared_ptr<CondVar> getCondVar() {
         return _cond_var;
+    }
+
+    bool canRead() {
+        bool ret = false;
+        for (InJackPtr<DType, channels> output : _outputs) {
+            ret = ret | output->canRead();
+        }
+        return ret;
     }
 private:
     void addPending() {

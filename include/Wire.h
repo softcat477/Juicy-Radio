@@ -17,7 +17,6 @@ class OutJack {
 public:
     // The special constructor for libmad
     OutJack(size_t sample_per_frame, size_t max_frame_count): 
-        //_buffers(channels, RingBuffer<DType>(sample_per_frame, max_frame_count)),
         _channels{channels},
         _sample_per_frame{sample_per_frame},
         _max_frame_count{max_frame_count},
@@ -30,7 +29,6 @@ public:
     }
     // For general use
     OutJack(size_t buffer_size): 
-        //_buffers(channels, RingBuffer<DType>(buffer_size, 1)),
         _channels{channels},
         _sample_per_frame{buffer_size},
         _max_frame_count{1},
@@ -40,15 +38,7 @@ public:
             _buffers.push_back(RingBuffer<int>(buffer_size, 1));
         }
     }
-    /*
-    Pass a conditional variable to ring buffers. Buffers fire the cond var whenever
-    something is written into them.
-    */
-    void addCondVar(std::shared_ptr<CondVar> cond_var) {
-        for (size_t i = 0; i < _channels; i++) {
-            _buffers[i].addCondVar(cond_var);
-        }
-    }
+
     ~OutJack(){
 
     }
@@ -239,11 +229,12 @@ public:
         return _channels;
     }
 
-    void addCondVar(std::shared_ptr<CondVar> cond_var) {
+    bool canRead() {
         std::shared_ptr<OutJack<DType, channels>> ptr = _out_ptr.lock();
         if (!ptr)
-            return;
-        ptr->addCondVar(cond_var);
+            return false;
+
+        return ptr->canRead();
     }
 
 private:
