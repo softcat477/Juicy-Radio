@@ -3,7 +3,10 @@
 #include <condition_variable>
 
 
-CondVar::CondVar(){
+CondVar::CondVar():
+        condvar{},
+        m{}
+{
 
 }
 CondVar::~CondVar(){
