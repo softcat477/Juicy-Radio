@@ -32,7 +32,10 @@ public:
 
     void shutdown();
 private:
+    ChannelStripSetting _channel_setting;
+
     ChannelGui* _stereo_out_gui;
+    ChannelGui _placeholder_gui;
 
     size_t _sample_per_frame;
     size_t _max_frame_count;

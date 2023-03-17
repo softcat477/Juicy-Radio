@@ -7,6 +7,8 @@ namespace AudioApp
 {
 MainComponent::MainComponent(size_t sample_per_frame_radio, size_t max_frame_count_radio,
     size_t sample_per_frame, size_t max_frame_count): // 8192, 128
+                    _channel_setting(0.0, 0.0, 0.0, 44100.0, 300),
+                    _placeholder_gui(&_channel_setting),
                         _radioReceiver{sample_per_frame_radio}, // 8192, magic(?) number for curl
                         _mp3_decoder(), // 1152, 128
                         _stereo_out()
@@ -35,13 +37,14 @@ MainComponent::MainComponent(size_t sample_per_frame_radio, size_t max_frame_cou
     // stereo out
     _stereo_out_gui = _stereo_out.getStereoOut();
     addAndMakeVisible(*_stereo_out_gui);
+    addAndMakeVisible(_placeholder_gui);
 
     // Start two threads
     this->_thread_internet = std::thread(&RadioReceiver::start, &_radioReceiver);
     this->_thread_decoder = std::thread(&Mp3Decoder::start, &_mp3_decoder);
     this->_thread_st_out = std::thread(&StereoOut::start, &_stereo_out);
 
-    setSize(120, 480);
+    setSize(240, 480);
 }
 MainComponent::~MainComponent()
 {
@@ -63,6 +66,7 @@ void MainComponent::resized()
 {
     auto area = getLocalBounds();
     _stereo_out_gui->setBounds(area.removeFromLeft(_stereo_out_gui->channel_width));
+    _placeholder_gui.setBounds(area.removeFromLeft(_placeholder_gui.channel_width));
 }
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
