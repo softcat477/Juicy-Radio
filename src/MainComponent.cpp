@@ -5,20 +5,24 @@
 
 namespace AudioApp
 {
-MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): // 8192, 128
-                        _sample_per_frame(sample_per_frame),
-                        _max_frame_count(max_frame_count),
-                        _radioReceiver{sample_per_frame}, // 8192, magic(?) number for curl
+MainComponent::MainComponent(size_t sample_per_frame_radio, size_t max_frame_count_radio,
+    size_t sample_per_frame, size_t max_frame_count): // 8192, 128
+                        _radioReceiver{sample_per_frame_radio}, // 8192, magic(?) number for curl
                         _mp3_decoder(), // 1152, 128
                         _stereo_out()
 {
+    // Get samples per frame
+    setAudioChannels(0, 2);
+    _device = deviceManager.getCurrentAudioDevice();
+    sample_per_frame = static_cast<size_t>(_device->getCurrentBufferSizeSamples());
+
     // Connect Wires
-    _wires_c2.push_back(std::make_shared<Wire<char, 2>>(sample_per_frame, max_frame_count));
+    _wires_c2.push_back(std::make_shared<Wire<char, 2>>(sample_per_frame_radio, max_frame_count_radio));
     _radioReceiver.connectOut(_wires_c2.back());
     _mp3_decoder.connectIn(_wires_c2.back());
     _mp3_decoder.listenTo(_radioReceiver.getSignal());
 
-    _wires_f2.push_back(std::make_shared<Wire<float, 2>>(1152, 512));
+    _wires_f2.push_back(std::make_shared<Wire<float, 2>>(sample_per_frame, max_frame_count));
     _mp3_decoder.connectOut(_wires_f2.back());
     _stereo_out.connectIn(_wires_f2.back());
 
@@ -31,8 +35,6 @@ MainComponent::MainComponent(size_t sample_per_frame, size_t max_frame_count): /
     this->_thread_decoder = std::thread(&Mp3Decoder::start, &_mp3_decoder);
 
     setSize(120, 480);
-
-    setAudioChannels(0, 2);
 
     printf ("Gain 0.5 = %f dB\n",  juce::Decibels::gainToDecibels(0.5));
 }

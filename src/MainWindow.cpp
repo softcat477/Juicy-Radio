@@ -17,9 +17,13 @@ AudioApp::MainWindow::MainWindow(const juce::String& name)
 {
     setUsingNativeTitleBar(true);
     //  Make the layout inside MainComponent()
-    size_t sample_per_frame = 8192;
-    size_t max_frame_count = 128;
-    _main_component = new MainComponent(sample_per_frame, max_frame_count);
+    size_t sample_per_frame_radio = 8192;
+    size_t max_frame_count_radio = 128;
+    //size_t sample_per_frame = 1152;
+    size_t sample_per_frame = 0; // Use device's default setting
+    size_t max_frame_count = 512;
+    _main_component = new MainComponent(sample_per_frame_radio, max_frame_count_radio,
+        sample_per_frame, max_frame_count);
     setContentOwned(_main_component, true);
 
     if (isMobile())

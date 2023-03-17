@@ -19,7 +19,8 @@ namespace AudioApp
 {
 class MainComponent : public juce::AudioAppComponent {
 public:
-    MainComponent(size_t sample_per_frame, size_t max_frame_count);
+    MainComponent(size_t sample_per_frame_radio, size_t max_frame_count_radio,
+        size_t sample_per_frame, size_t max_frame_count);
     ~MainComponent() override;
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
@@ -52,6 +53,8 @@ private:
 
     std::vector<WirePtr<char, 2>> _wires_c2;
     std::vector<WirePtr<float, 2>> _wires_f2;
+
+    juce::AudioIODevice* _device;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
