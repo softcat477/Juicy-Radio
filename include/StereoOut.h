@@ -4,10 +4,11 @@
 #include <juce_audio_devices/juce_audio_devices.h>
 
 #include "IOParams.h"
+#include "IThread.h"
 #include "ChannelGui.h"
 #include "Channel.h"
 
-class StereoOut: public Channel<float, float, 2> {
+class StereoOut: public Channel<float, float, 2>, public IThread {
 public:
     StereoOut();
     ~StereoOut();
@@ -18,8 +19,9 @@ public:
     StereoOut& operator=(StereoOut&& other) = delete;
 
     ChannelGui* getStereoOut(){return &_channel_gui;}
+    void start() override;
 
-    void getNextAudioBlock(juce::AudioBuffer<float>* out_buffer, int num_samples, int& success_sample_L, int& success_sample_R);
+    void getNextAudioBlock();
 private:
     ChannelStripSetting _channel_setting;
     ChannelGui _channel_gui;

@@ -14,3 +14,6 @@ void IThread::setStart(){
 bool IThread::isStopped(){
     return _isStopped.load();
 }
+void IThread::setUpdateCycle(double ms) {
+    _update_ms = ms;
+}

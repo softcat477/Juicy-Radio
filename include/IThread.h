@@ -12,8 +12,11 @@ public:
     void setStop();
     void setStart();
     bool isStopped();
+
+    void setUpdateCycle(double ms);
 protected:
     std::atomic<bool> _isStopped;
+    double _update_ms;
 };
 
 #endif

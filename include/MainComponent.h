@@ -39,6 +39,7 @@ private:
 
     std::thread _thread_internet;
     std::thread _thread_decoder;
+    std::thread _thread_st_out;
 
     // Connect to a radio station and receive mp3 frames with LIBCURL.
     // Hold a RingBuffer to store chunks of data, and use _cond_mp3 to inform
@@ -55,6 +56,8 @@ private:
     std::vector<WirePtr<float, 2>> _wires_f2;
 
     juce::AudioIODevice* _device;
+
+    OutJackPtr<float, 2> _stereo_out_wire;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
