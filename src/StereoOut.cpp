@@ -2,6 +2,7 @@
 #include "../include/IOParams.h"
 
 #include <chrono>
+#include <thread>
 
 StereoOut::StereoOut():
                 _channel_setting(0.0, 0.0, 0.0, 44100.0, 300),
@@ -11,8 +12,8 @@ StereoOut::~StereoOut(){
 }
 
 void StereoOut::start() {
-    const std::chrono::duration<double, std::milli> elapsed  (_update_ms/1.25);
-    printf ("Elapsed ms : %f\n", _update_ms/1.25);
+    const std::chrono::duration<double, std::milli> elapsed  (_update_ms/1.35);
+    printf ("Elapsed ms : %f\n", _update_ms/1.35);
     while (true) {
         if (this->_isStopped.load() == true)
             break;

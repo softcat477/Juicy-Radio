@@ -32,29 +32,34 @@ public:
 
     void shutdown();
 private:
-    ChannelStripSetting _channel_setting;
-
     ChannelGui* _stereo_out_gui;
-    ChannelGui _placeholder_gui;
+    ChannelGui* _gui1;
+    ChannelGui* _gui2;
 
     size_t _sample_per_frame;
     size_t _max_frame_count;
 
-    std::thread _thread_internet;
-    std::thread _thread_decoder;
+    // left radio
+    std::thread _thread_internet1;
+    std::thread _thread_decoder1;
+    std::thread _thread_st_out1;
+    RadioReceiver _radioReceiver1;
+    Mp3Decoder _mp3_decoder1;
+    StereoOut _stereo_out1;
+
+    // right radio
+    std::thread _thread_internet2;
+    std::thread _thread_decoder2;
+    std::thread _thread_st_out2;
+    RadioReceiver _radioReceiver2;
+    Mp3Decoder _mp3_decoder2;
+    StereoOut _stereo_out2;
+
+    // st-out
     std::thread _thread_st_out;
+    StereoOut _st_out;
 
-    // Connect to a radio station and receive mp3 frames with LIBCURL.
-    // Hold a RingBuffer to store chunks of data, and use _cond_mp3 to inform
-    // the holder that there are new data in the ring buffer.
-    RadioReceiver _radioReceiver;
-    // In charge of decoding data in a ring buffer to waveform.
-    // and store them into TWO ring buffers (left channel and right channel)
-    // ThreadDecoder _mp3_decoder; // RingBuffer for pcm data, _cond_pcm
-    Mp3Decoder _mp3_decoder; // RingBuffer for pcm data, _cond_pcm
-
-    StereoOut _stereo_out;
-
+    // Wires
     std::vector<WirePtr<char, 2>> _wires_c2;
     std::vector<WirePtr<float, 2>> _wires_f2;
 
