@@ -11,8 +11,8 @@ StereoOut::~StereoOut(){
 }
 
 void StereoOut::start() {
-    const std::chrono::duration<double, std::milli> elapsed  (_update_ms/1.25);
-    printf ("Elapsed ms : %f\n", _update_ms/1.25);
+    const std::chrono::duration<double, std::milli> elapsed  (_update_ms/1.35);
+    printf ("Elapsed ms : %f\n", _update_ms/1.35);
     while (true) {
         if (this->_isStopped.load() == true)
             break;
