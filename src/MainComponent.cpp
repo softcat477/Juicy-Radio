@@ -12,15 +12,13 @@ MainComponent::MainComponent(size_t sample_per_frame_radio, size_t max_frame_cou
                         _radioReceiver2{sample_per_frame_radio}, // 8192, magic(?) number for curl
                         _mp3_decoder2(), // 1152, 128
                         _stereo_out2(),
+                        _osc{},
                         _st_out()
 {
     // Get samples per frame
     setAudioChannels(0, 2);
     _device = deviceManager.getCurrentAudioDevice();
     sample_per_frame = static_cast<size_t>(_device->getCurrentBufferSizeSamples());
-    _stereo_out1.setUpdateCycle((sample_per_frame/_device->getCurrentSampleRate())*1000.0);
-    _stereo_out2.setUpdateCycle((sample_per_frame/_device->getCurrentSampleRate())*1000.0);
-    _st_out.setUpdateCycle((sample_per_frame/_device->getCurrentSampleRate())*1000.0);
 
     // Connect left radio channel
     _wires_c2.push_back(std::make_shared<Wire<char, 2>>(sample_per_frame_radio, max_frame_count_radio));
@@ -35,19 +33,10 @@ MainComponent::MainComponent(size_t sample_per_frame_radio, size_t max_frame_cou
     _wires_f2.push_back(std::make_shared<Wire<float, 2>>(sample_per_frame, max_frame_count));
     _stereo_out1.connectOut(_wires_f2.back());
     _st_out.connectIn(_wires_f2.back());
-
-    // Connect right radio channel
-    _wires_c2.push_back(std::make_shared<Wire<char, 2>>(sample_per_frame_radio, max_frame_count_radio));
-    _radioReceiver2.connectOut(_wires_c2.back());
-    _mp3_decoder2.connectIn(_wires_c2.back());
-    _mp3_decoder2.listenTo(_radioReceiver2.getSignal());
-
+    
+    // Conncet OSC
     _wires_f2.push_back(std::make_shared<Wire<float, 2>>(sample_per_frame, max_frame_count));
-    _mp3_decoder2.connectOut(_wires_f2.back());
-    _stereo_out2.connectIn(_wires_f2.back());
-
-    _wires_f2.push_back(std::make_shared<Wire<float, 2>>(sample_per_frame, max_frame_count));
-    _stereo_out2.connectOut(_wires_f2.back());
+    _osc.connectOut(_wires_f2.back());
     _st_out.connectIn(_wires_f2.back());
 
     // stereo-out
@@ -57,7 +46,8 @@ MainComponent::MainComponent(size_t sample_per_frame_radio, size_t max_frame_cou
 
     // Make Guis visible
     _gui1 = _stereo_out1.getStereoOut();
-    _gui2 = _stereo_out2.getStereoOut();
+    //_gui2 = _stereo_out2.getStereoOut();
+    _gui2 = _osc.getStereoOut();
     _stereo_out_gui = _st_out.getStereoOut();
     addAndMakeVisible(_gui1);
     addAndMakeVisible(_gui2);
@@ -70,9 +60,7 @@ MainComponent::MainComponent(size_t sample_per_frame_radio, size_t max_frame_cou
     this->_thread_decoder1 = std::thread(&Mp3Decoder::start, &_mp3_decoder1);
     this->_thread_st_out1 = std::thread(&StereoOut::start, &_stereo_out1);
 
-    this->_thread_internet2 = std::thread(&RadioReceiver::start, &_radioReceiver2);
-    this->_thread_decoder2 = std::thread(&Mp3Decoder::start, &_mp3_decoder2);
-    this->_thread_st_out2 = std::thread(&StereoOut::start, &_stereo_out2);
+    this->_thread_osc = std::thread(&Osc::start, &_osc);
 
     this->_thread_st_out = std::thread(&StereoOut::start, &_st_out);
 }
@@ -85,9 +73,7 @@ void MainComponent::shutdown(){
     _mp3_decoder1.setStop();
     _stereo_out1.setStop();
 
-    _radioReceiver2.setStop();
-    _mp3_decoder2.setStop();
-    _stereo_out2.setStop();
+    _osc.setStop();
 
     _st_out.setStop();
 
@@ -95,9 +81,7 @@ void MainComponent::shutdown(){
     this->_thread_decoder1.join();
     this->_thread_st_out1.join();
 
-    this->_thread_internet2.join();
-    this->_thread_decoder2.join();
-    this->_thread_st_out2.join();
+    this->_thread_osc.join();
 
     this->_thread_st_out.join();
 }
@@ -116,6 +100,16 @@ void MainComponent::resized()
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     printf ("Prepare to play with %d/%f\n", samplesPerBlockExpected, sampleRate);
+    _device = deviceManager.getCurrentAudioDevice();
+    size_t sample_per_frame = static_cast<size_t>(_device->getCurrentBufferSizeSamples());
+    _stereo_out1.setUpdateCycle((samplesPerBlockExpected/sampleRate)*1000.0);
+    _stereo_out2.setUpdateCycle((samplesPerBlockExpected/sampleRate)*1000.0);
+    _st_out.setUpdateCycle((samplesPerBlockExpected/sampleRate)*1000.0);
+    _osc.setUpdateCycle((samplesPerBlockExpected/sampleRate)*1000.0);
+    _osc.setF(440.0);
+    _osc.setFs(_device->getCurrentSampleRate());
+
+    _osc.prepareTable();
 }
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {

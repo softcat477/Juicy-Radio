@@ -22,6 +22,7 @@ target_sources(${TargetName} PRIVATE
         src/ChannelGui.cpp
         src/Mp3Decoder.cpp
         src/RadioReceiver.cpp
+        src/Osc.cpp
         main.cpp)
 target_compile_definitions(${TargetName} PRIVATE
         JUCE_WEB_BROWSER=0

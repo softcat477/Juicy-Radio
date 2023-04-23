@@ -11,6 +11,8 @@
 #include "Mp3Decoder.h"
 #include "ChannelGui.h"
 
+#include "Osc.h"
+
 #include "Wire.h"
 #include "Aggregator.h"
 #include "Distributor.h"
@@ -54,6 +56,10 @@ private:
     RadioReceiver _radioReceiver2;
     Mp3Decoder _mp3_decoder2;
     StereoOut _stereo_out2;
+
+    // Sine wave osc
+    std::thread _thread_osc;
+    Osc _osc;
 
     // st-out
     std::thread _thread_st_out;
